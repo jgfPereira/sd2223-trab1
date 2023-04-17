@@ -1,16 +1,15 @@
 package sd2223.trab1.clients;
 
-import java.net.URI;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
-
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
-
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import sd2223.trab1.api.discovery.Discovery;
+
+import java.net.URI;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class RestClient {
     protected static final int READ_TIMEOUT = 5000;
@@ -18,10 +17,10 @@ public class RestClient {
     protected static final int RETRY_SLEEP = 3000;
     protected static final int MAX_RETRIES = 10;
     private static final Logger Log = Logger.getLogger(RestClient.class.getName());
-    final URI serverURI;
     final Client client;
     final ClientConfig config;
     protected Discovery discovery;
+    URI serverURI;
 
     RestClient(URI serverURI) {
         this.serverURI = serverURI;

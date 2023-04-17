@@ -1,16 +1,16 @@
 package sd2223.trab1.server.resources;
 
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.Status;
+import sd2223.trab1.api.User;
+import sd2223.trab1.api.rest.UsersService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import sd2223.trab1.api.User;
-import sd2223.trab1.api.rest.UsersService;
-import jakarta.inject.Singleton;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response.Status;
 
 @Singleton
 public class UsersResource implements UsersService {
@@ -35,6 +35,7 @@ public class UsersResource implements UsersService {
             Log.info("User already exists");
             return Status.CONFLICT.getStatusCode() + " " + Status.CONFLICT.getReasonPhrase();
         }
+        Log.fine("User created " + user.getName());
         return Status.OK.getStatusCode() + user.getName() + "@" + user.getDomain();
     }
 

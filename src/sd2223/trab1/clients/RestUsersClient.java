@@ -1,17 +1,16 @@
 package sd2223.trab1.clients;
 
-import java.net.URI;
-import java.util.List;
-
-import sd2223.trab1.api.User;
-import sd2223.trab1.api.discovery.Discovery;
-import sd2223.trab1.api.rest.UsersService;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import sd2223.trab1.api.User;
+import sd2223.trab1.api.rest.UsersService;
+
+import java.net.URI;
+import java.util.List;
 
 public class RestUsersClient extends RestClient implements UsersService {
 
@@ -31,25 +30,15 @@ public class RestUsersClient extends RestClient implements UsersService {
         target = client.target(serverURI).path(UsersService.PATH);
     }
 
-//	RestUsersClient(String domain) {
-//		super();
-//		this.domain = domain;
-//		target = client.target(serverURI).path(UsersService.PATH);
-//	}
+    RestUsersClient(String domain) {
+        super();
+        this.domain = domain;
+        this.serverURI = this.searchServer(domain);
+        target = client.target(serverURI).path(UsersService.PATH);
+    }
 
-    private boolean checkDomainAndServer(URI serverURI, String domain) {
-
-        String[] split = serverURI.getHost().split(".");
-        String serverDomain = split[split.length - 1];
-        final boolean isDomainOfServer = serverDomain.equals(domain);
-
-        if (!isDomainOfServer)
-
-            URI[] knownURIS = this.discovery.knownUrisOf(domain + ":users", 1);
-        for (URI u : knownURIS) {
-
-        }
-
+    private URI searchServer(String domain) {
+        return this.discovery.knownUrisOf(String.format(SERVICE_NAME_FMT, domain), 1)[0];
     }
 
     private String clt_createUser(User user) {
