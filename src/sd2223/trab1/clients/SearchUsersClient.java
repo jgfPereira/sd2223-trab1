@@ -1,27 +1,27 @@
 package sd2223.trab1.clients;
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.logging.Logger;
 
 public class SearchUsersClient {
 
-	static {
-		System.setProperty("java.net.preferIPv4Stack", "true");
-	}
+    private static final Logger Log = Logger.getLogger(SearchUsersClient.class.getName());
 
-	public static void main(String[] args) throws IOException {
+    static {
+        System.setProperty("java.net.preferIPv4Stack", "true");
+    }
 
-		if (args.length != 2) {
-			System.err.println("Use: java aula3.clients.SearchUsersClient url userId ");
-			return;
-		}
-
-		String serverUrl = args[0];
-		String userId = args[1];
-
-		System.out.println("Sending request to server.");
-//		new RestUsersClient(URI.create(serverUrl)).searchUsers(userId);
-
-	}
-
+    public static void main(String[] args) throws IOException {
+        if (args.length != 2) {
+            System.err.println("Use: java sd2223.clients.SearchUsersClient pattern domain");
+            return;
+        }
+        String pattern = args[0];
+        String domain = args[1];
+        var result = new RestUsersClient(domain).searchUsers(pattern);
+        if (result != null) {
+            Log.info(result.toString());
+        }
+        System.out.println("Result: " + result);
+    }
 }

@@ -1,6 +1,5 @@
 package sd2223.trab1.clients;
 
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
@@ -46,7 +45,9 @@ public class RestUsersClient extends RestClient implements UsersService {
         Response r = target.request().accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-            return r.readEntity(String.class);
+            String u = r.readEntity(String.class);
+            System.out.println("Success, fetched user with id@domain: " + u);
+            return u;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
             return null;
@@ -59,7 +60,9 @@ public class RestUsersClient extends RestClient implements UsersService {
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .get();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-            return r.readEntity(User.class);
+            User userEntity = r.readEntity(User.class);
+            System.out.println("Success, fetched user with id: " + userEntity.getName());
+            return userEntity;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
             return null;
@@ -70,7 +73,9 @@ public class RestUsersClient extends RestClient implements UsersService {
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .put(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-            return r.readEntity(User.class);
+            User userEntity = r.readEntity(User.class);
+            System.out.println("Success, updated user with id: " + userEntity.getName());
+            return userEntity;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
             return null;
@@ -80,30 +85,29 @@ public class RestUsersClient extends RestClient implements UsersService {
     private User clt_deleteUser(String name, String password) {
         Response r = target.path(name).queryParam(UsersService.PWD, password).request()
                 .accept(MediaType.APPLICATION_JSON).delete();
-
-        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity())
-            System.out.println("Success, deleted user with id: " + r.readEntity(String.class));
-        else
-            System.out.println("Error, HTTP error status: " + r.getStatus());
-
-        return null;
-
+        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
+            User userEntity = r.readEntity(User.class);
+            System.out.println("Success, deleted user with id: " + userEntity.getName());
+            return userEntity;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
+        }
     }
 
     private List<User> clt_searchUsers(String pattern) {
         Response r = target.path("/").queryParam(UsersService.QUERY, pattern).request()
                 .accept(MediaType.APPLICATION_JSON).get();
-
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
             var users = r.readEntity(new GenericType<List<User>>() {
             });
             System.out.println("Success: (" + users.size() + " users)");
             users.stream().forEach(u -> System.out.println(u));
-        } else
-            System.out.println("Error, HTTP error status: " + r.getStatus());
-
-        return null;
-
+            return users;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
+        }
     }
 
     @Override

@@ -1,14 +1,13 @@
 package sd2223.trab1.clients;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.logging.Logger;
-
 import sd2223.trab1.api.User;
+
+import java.io.IOException;
+import java.util.logging.Logger;
 
 public class UpdateUserClient {
 
-    private static final Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+    private static final Logger Log = Logger.getLogger(UpdateUserClient.class.getName());
 
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");

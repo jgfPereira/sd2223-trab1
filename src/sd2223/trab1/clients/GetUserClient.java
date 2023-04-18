@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class GetUserClient {
 
-    private static final Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+    private static final Logger Log = Logger.getLogger(GetUserClient.class.getName());
 
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");

@@ -36,7 +36,7 @@ public class UsersResource implements UsersService {
             throw new WebApplicationException(Status.CONFLICT);
         }
         Log.fine("User created " + user.getName());
-        return Status.OK.getStatusCode() + user.getName() + "@" + user.getDomain();
+        return user.getName() + "@" + user.getDomain();
     }
 
     @Override
@@ -101,48 +101,40 @@ public class UsersResource implements UsersService {
     @Override
     public User deleteUser(String name, String password) {
         Log.info("deleteUser : user = " + name + "; pwd = " + password);
-
         // Check if user is valid
         if (name == null || password == null) {
-            Log.info("UserId or password null.");
+            Log.info("Invalid data");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-
-        var user = users.get(name);
-
         // Check if user exists
+        var user = users.get(name);
         if (user == null) {
-            Log.info("User does not exist.");
+            Log.info("User does not exist");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
-
         // Check if the password is correct
         if (!user.getPwd().equals(password)) {
-            Log.info("Password is incorrect.");
+            Log.info("Password is incorrect");
             throw new WebApplicationException(Status.FORBIDDEN);
         }
-
-        this.users.remove(user.getName());
+        this.users.remove(name);
         return user;
     }
 
     @Override
     public List<User> searchUsers(String pattern) {
         Log.info("searchUsers : pattern = " + pattern);
-
         if (pattern == null) {
-            Log.info("pattern null.");
+            Log.info("Invalid Pattern");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-
         List<User> res = new ArrayList<>();
         for (User u : this.users.values()) {
-            if (u.getDisplayName().contains(pattern)) {
-                res.add(u);
+            if (u.getDisplayName().toLowerCase().contains(pattern.toLowerCase())) {
+                User tmp = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
+                res.add(tmp);
             }
         }
-
         return res;
     }
-
 }
