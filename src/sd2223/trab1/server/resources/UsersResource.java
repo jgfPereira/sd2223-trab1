@@ -28,12 +28,12 @@ public class UsersResource implements UsersService {
         if (user.getName() == null || user.getPwd() == null || user.getDisplayName() == null
                 || user.getDomain() == null) {
             Log.info("User data invalid");
-            return Status.BAD_REQUEST.getStatusCode() + " " + Status.BAD_REQUEST.getReasonPhrase();
+            throw new WebApplicationException(Status.BAD_REQUEST);
         }
         // Insert user, checking if name already exists
         if (users.putIfAbsent(user.getName(), user) != null) {
             Log.info("User already exists");
-            return Status.CONFLICT.getStatusCode() + " " + Status.CONFLICT.getReasonPhrase();
+            throw new WebApplicationException(Status.CONFLICT);
         }
         Log.fine("User created " + user.getName());
         return Status.OK.getStatusCode() + user.getName() + "@" + user.getDomain();
@@ -42,55 +42,60 @@ public class UsersResource implements UsersService {
     @Override
     public User getUser(String name, String pwd) {
         Log.info("getUser : user = " + name + "; pwd = " + pwd);
-
         // Check if user is valid
         if (name == null || pwd == null) {
-            Log.info("Name or Password null.");
+            Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-
         User user = users.get(name);
         // Check if user exists
         if (user == null) {
-            Log.info("User does not exist.");
+            Log.info("User does not exist");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
-
         // Check if the password is correct
         if (!user.getPwd().equals(pwd)) {
-            Log.info("Password is incorrect.");
+            Log.info("Password is incorrect");
             throw new WebApplicationException(Status.FORBIDDEN);
         }
-
         return user;
     }
 
     @Override
     public User updateUser(String name, String password, User user) {
         Log.info("updateUser : name = " + name + "; pwd = " + password + " ; user = " + user);
-
         // Check if user is valid
         if (name == null || password == null || user == null) {
-            Log.info("UserId or password or user null.");
+            Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-
-        var userTemp = users.get(name);
-
         // Check if userTemp exists
+        var userTemp = users.get(name);
         if (userTemp == null) {
-            Log.info("User does not exist.");
+            Log.info("User does not exist");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
-
         // Check if the password is correct
         if (!userTemp.getPwd().equals(password)) {
-            Log.info("Password is incorrect.");
+            Log.info("Password is incorrect");
             throw new WebApplicationException(Status.FORBIDDEN);
         }
-
+        // fields not to update are passed as 'null' on cli
+        this.handleNullFields(user, userTemp);
         this.users.put(name, user);
         return user;
+    }
+
+    private void handleNullFields(User user, User userTemp) {
+        if (user.getDomain().equals("null")) {
+            user.setDomain(userTemp.getDomain());
+        }
+        if (user.getDisplayName().equals("null")) {
+            user.setDisplayName(userTemp.getDisplayName());
+        }
+        if (user.getPwd().equals("null")) {
+            user.setPwd(userTemp.getPwd());
+        }
     }
 
     @Override

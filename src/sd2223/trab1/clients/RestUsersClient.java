@@ -1,5 +1,6 @@
 package sd2223.trab1.clients;
 
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
@@ -46,23 +47,34 @@ public class RestUsersClient extends RestClient implements UsersService {
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
             return r.readEntity(String.class);
-        } else if (r.hasEntity()) {
-            System.out.println("Error, HTTP error status: " + r.getStatus());
-            return r.readEntity(String.class);
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
         }
-        return null;
     }
 
+
     private User clt_getUser(String name, String pwd) {
+        // in the end change to post because password will be visible on url
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .get();
-
-        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity())
+        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
             return r.readEntity(User.class);
-        else
-            System.out.println("Error, HTTP error status: " + r.getStatus());
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
+        }
+    }
 
-        return null;
+    private User clt_updateUser(String name, String pwd, User user) {
+        Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
+                .put(Entity.entity(user, MediaType.APPLICATION_JSON));
+        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
+            return r.readEntity(User.class);
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
+        }
     }
 
     private User clt_deleteUser(String name, String password) {
@@ -72,21 +84,6 @@ public class RestUsersClient extends RestClient implements UsersService {
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity())
             System.out.println("Success, deleted user with id: " + r.readEntity(String.class));
         else
-            System.out.println("Error, HTTP error status: " + r.getStatus());
-
-        return null;
-
-    }
-
-    private User clt_updateUser(String name, String pwd, User user) {
-        Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
-                .put(Entity.entity(user, MediaType.APPLICATION_JSON));
-
-        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-            System.out.println("Success:");
-            var u1 = r.readEntity(User.class);
-            System.out.println("User : " + u1);
-        } else
             System.out.println("Error, HTTP error status: " + r.getStatus());
 
         return null;
