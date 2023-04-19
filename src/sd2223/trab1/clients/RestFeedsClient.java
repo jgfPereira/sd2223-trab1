@@ -17,23 +17,11 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     final WebTarget target;
     private final String domain;
 
-    RestFeedsClient(URI serverURI, String domain) {
-        super(serverURI);
-        this.domain = domain;
-        target = client.target(serverURI).path(UsersService.PATH);
-    }
-
-    RestFeedsClient(URI serverURI) {
-        super(serverURI);
-        this.domain = null;
-        target = client.target(serverURI).path(FeedsService.PATH);
-    }
-
     RestFeedsClient(String domain) {
         super();
         this.domain = domain;
         this.serverURI = this.searchServer(domain);
-        target = client.target(serverURI).path(UsersService.PATH);
+        target = client.target(serverURI).path(FeedsService.PATH);
     }
 
     private URI searchServer(String domain) {
@@ -79,7 +67,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
 
     @Override
     public long postMessage(String user, String pwd, Message msg) {
-        return 0;
+        return super.reTry(() -> clt_postMessage(user, pwd, msg));
     }
 
     @Override

@@ -18,23 +18,11 @@ public class RestUsersClient extends RestClient implements UsersService {
     final WebTarget target;
     private final String domain;
 
-//    RestUsersClient(URI serverURI, String domain) {
-//        super(serverURI);
-//        this.domain = domain;
-//        target = client.target(serverURI).path(UsersService.PATH);
-//    }
-//
-//    RestUsersClient(URI serverURI) {
-//        super(serverURI);
-//        this.domain = null;
-//        target = client.target(serverURI).path(UsersService.PATH);
-//    }
-
     public RestUsersClient(String domain) {
         super();
         this.domain = domain;
         this.serverURI = this.searchServer(domain);
-        target = client.target(serverURI).path();
+        target = client.target(serverURI).path(UsersService.PATH);
     }
 
     private URI searchServer(String domain) {

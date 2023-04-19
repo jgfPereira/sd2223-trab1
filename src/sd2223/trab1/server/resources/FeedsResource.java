@@ -27,13 +27,14 @@ public class FeedsResource implements FeedsService {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
+        final String uname = user.split("@")[0];
         final String domain = user.split("@")[1];
-        var respGetUser = new RestUsersClient(domain).resp_getUser(user, pwd);
+        var respGetUser = new RestUsersClient(domain).resp_getUser(uname, pwd);
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             long msgId = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
             msg.setId(msgId);
-            this.feeds.putIfAbsent(user, new ArrayList<>());
-            this.feeds.get(user).add(msg);
+            this.feeds.putIfAbsent(uname, new ArrayList<>());
+            this.feeds.get(uname).add(msg);
             return msgId;
         } else if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
@@ -43,7 +44,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
         Log.info("Bad Request");
-        throw new WebApplicationException(Response.Status.FORBIDDEN);
+        throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
 
     @Override
