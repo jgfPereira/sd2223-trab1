@@ -136,6 +136,33 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
+    public List<String> listSubs(String user) {
+        Log.info("listSubs : " + user);
+        if (user == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String listUser = user.split("@")[0];
+        final String listUserDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(listUserDomain).resp_internal_getUser(listUser);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            List<String> resSubs = this.subs.get(listUser);
+            if (resSubs == null) {
+                resSubs = new ArrayList<>();
+            }
+            return resSubs;
+        }
+        return null;
+    }
+
+    @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
 
     }
@@ -147,12 +174,6 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public List<Message> getMessages(String user, long time) {
-        return null;
-    }
-
-
-    @Override
-    public List<String> listSubs(String user) {
         return null;
     }
 }

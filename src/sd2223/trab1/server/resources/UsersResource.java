@@ -131,7 +131,7 @@ public class UsersResource implements UsersService {
         }
         List<User> res = new ArrayList<>();
         for (User u : this.users.values()) {
-            if (u.getDisplayName().toLowerCase().contains(pattern.toLowerCase())) {
+            if (u.getName().toLowerCase().contains(pattern.toLowerCase())) {
                 User tmp = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
                 res.add(tmp);
             }

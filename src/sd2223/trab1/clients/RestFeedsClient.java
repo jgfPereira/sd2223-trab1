@@ -69,6 +69,21 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
+    public List<String> clt_listSubs(String user) {
+        Response r = target.path("/sub/list")
+                .path(user)
+                .request()
+                .get();
+        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
+            List<String> userSubs = r.readEntity(List.class);
+            System.out.println("Success, list of subscribers: " + userSubs);
+            return userSubs;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+        return null;
+    }
+
     public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
 
     }
@@ -81,10 +96,6 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-
-    public List<String> clt_listSubs(String user) {
-        return null;
-    }
 
     @Override
     public long postMessage(String user, String pwd, Message msg) {
@@ -116,9 +127,8 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-
     @Override
     public List<String> listSubs(String user) {
-        return null;
+        return super.reTry(() -> clt_listSubs(user));
     }
 }
