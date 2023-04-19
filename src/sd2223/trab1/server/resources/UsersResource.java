@@ -2,6 +2,7 @@ package sd2223.trab1.server.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import sd2223.trab1.api.User;
 import sd2223.trab1.api.rest.UsersService;
@@ -136,5 +137,10 @@ public class UsersResource implements UsersService {
             }
         }
         return res;
+    }
+
+    @Override
+    public Response resp_getUser(String name, String pwd) {
+        return null;
     }
 }

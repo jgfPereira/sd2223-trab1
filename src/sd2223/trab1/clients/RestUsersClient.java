@@ -18,23 +18,23 @@ public class RestUsersClient extends RestClient implements UsersService {
     final WebTarget target;
     private final String domain;
 
-    RestUsersClient(URI serverURI, String domain) {
-        super(serverURI);
-        this.domain = domain;
-        target = client.target(serverURI).path(UsersService.PATH);
-    }
+//    RestUsersClient(URI serverURI, String domain) {
+//        super(serverURI);
+//        this.domain = domain;
+//        target = client.target(serverURI).path(UsersService.PATH);
+//    }
+//
+//    RestUsersClient(URI serverURI) {
+//        super(serverURI);
+//        this.domain = null;
+//        target = client.target(serverURI).path(UsersService.PATH);
+//    }
 
-    RestUsersClient(URI serverURI) {
-        super(serverURI);
-        this.domain = null;
-        target = client.target(serverURI).path(UsersService.PATH);
-    }
-
-    RestUsersClient(String domain) {
+    public RestUsersClient(String domain) {
         super();
         this.domain = domain;
         this.serverURI = this.searchServer(domain);
-        target = client.target(serverURI).path(UsersService.PATH);
+        target = client.target(serverURI).path();
     }
 
     private URI searchServer(String domain) {
@@ -46,12 +46,17 @@ public class RestUsersClient extends RestClient implements UsersService {
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
             String u = r.readEntity(String.class);
-            System.out.println("Success, fetched user with id@domain: " + u);
+            System.out.println("Success, created user with id@domain: " + u);
             return u;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
             return null;
         }
+    }
+
+    private Response clt_resp_getUser(String name, String pwd) {
+        return target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
+                .get();
     }
 
 
@@ -123,6 +128,11 @@ public class RestUsersClient extends RestClient implements UsersService {
     @Override
     public User getUser(String name, String pwd) {
         return super.reTry(() -> clt_getUser(name, pwd));
+    }
+
+    @Override
+    public Response resp_getUser(String name, String pwd) {
+        return super.reTry(() -> clt_resp_getUser(name, pwd));
     }
 
     @Override
