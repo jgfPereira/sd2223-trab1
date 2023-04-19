@@ -41,16 +41,18 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         }
     }
 
-    public void clt_subUser(String user, String userSub, String pwd) {
-        Response r = target.path("/sub").queryParam(FeedsService.USER, user)
-                .queryParam(FeedsService.USERSUB, userSub)
-                .queryParam(FeedsService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(Entity.json(null), MediaType.APPLICATION_JSON));
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
-            System.out.println("Success, user subscribed");
+    public Void clt_subUser(String user, String userSub, String pwd) {
+        Response r = target.path("/sub")
+                .path(user)
+                .path(userSub)
+                .queryParam(UsersService.PWD, pwd).request()
+                .post(null);
+        if (r.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+            System.out.println("Success, " + user + " has subscribed to " + userSub);
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
         }
+        return null;
     }
 
     public void clt_unsubscribeUser(String user, String userSub, String pwd) {
@@ -80,6 +82,16 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     }
 
     @Override
+    public void subUser(String user, String userSub, String pwd) {
+        super.reTry(() -> clt_subUser(user, userSub, pwd));
+    }
+
+    @Override
+    public void unsubscribeUser(String user, String userSub, String pwd) {
+
+    }
+
+    @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
 
     }
@@ -94,15 +106,6 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    @Override
-    public void subUser(String user, String userSub, String pwd) {
-
-    }
-
-    @Override
-    public void unsubscribeUser(String user, String userSub, String pwd) {
-
-    }
 
     @Override
     public List<String> listSubs(String user) {

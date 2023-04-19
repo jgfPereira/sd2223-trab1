@@ -48,12 +48,12 @@ public class RestUsersClient extends RestClient implements UsersService {
     }
 
     private Response clt_resp_internal_getUser(String name) {
-        return target.path("/internal").queryParam(UsersService.NAME, name).request().accept(MediaType.APPLICATION_JSON)
+        return target.path("/internal").path(name).request().accept(MediaType.APPLICATION_JSON)
                 .get();
     }
 
     private User clt_internal_getUser(String name) {
-        Response r = target.path("/internal").queryParam(UsersService.NAME, name).request().accept(MediaType.APPLICATION_JSON)
+        Response r = target.path("/internal").path(name).request().accept(MediaType.APPLICATION_JSON)
                 .get();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
             User userEntity = r.readEntity(User.class);

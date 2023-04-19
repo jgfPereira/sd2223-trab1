@@ -50,7 +50,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void subUser(String user, String userSub, String pwd) {
-        Log.info("subUser : " + user + " " + userSub);
+        Log.info("subUser : " + user + " " + userSub + " " + pwd);
         if (user == null || userSub == null || pwd == null) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -82,7 +82,10 @@ public class FeedsResource implements FeedsService {
         if (respGetSubscriber.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscriber.hasEntity()
                 && respGetSubscribed.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscribed.hasEntity()) {
             this.subs.putIfAbsent(subscribed, new ArrayList<>());
-            this.subs.get(subscribed).add(subscriber);
+            List<String> listSubs = this.subs.get(subscribed);
+            if (!listSubs.contains(subscriber)) {
+                listSubs.add(subscriber);
+            }
         }
     }
 
