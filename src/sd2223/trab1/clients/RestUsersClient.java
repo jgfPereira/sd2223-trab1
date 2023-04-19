@@ -47,6 +47,24 @@ public class RestUsersClient extends RestClient implements UsersService {
                 .get();
     }
 
+    private Response clt_resp_internal_getUser(String name) {
+        return target.path("/internal").queryParam(UsersService.NAME, name).request().accept(MediaType.APPLICATION_JSON)
+                .get();
+    }
+
+    private User clt_internal_getUser(String name) {
+        Response r = target.path("/internal").queryParam(UsersService.NAME, name).request().accept(MediaType.APPLICATION_JSON)
+                .get();
+        if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
+            User userEntity = r.readEntity(User.class);
+            System.out.println("Success, fetched user with id: " + userEntity.getName());
+            return userEntity;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+            return null;
+        }
+    }
+
 
     private User clt_getUser(String name, String pwd) {
         // in the end change to post because password will be visible on url
@@ -121,6 +139,16 @@ public class RestUsersClient extends RestClient implements UsersService {
     @Override
     public Response resp_getUser(String name, String pwd) {
         return super.reTry(() -> clt_resp_getUser(name, pwd));
+    }
+
+    @Override
+    public User internal_getUser(String name) {
+        return super.reTry(() -> clt_internal_getUser(name));
+    }
+
+    @Override
+    public Response resp_internal_getUser(String name) {
+        return super.reTry(() -> clt_resp_internal_getUser(name));
     }
 
     @Override

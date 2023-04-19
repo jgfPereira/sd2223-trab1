@@ -143,4 +143,26 @@ public class UsersResource implements UsersService {
     public Response resp_getUser(String name, String pwd) {
         return null;
     }
+
+    @Override
+    public User internal_getUser(String name) {
+        Log.info("getUser : user = " + name);
+        // Check if user is valid
+        if (name == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Status.BAD_REQUEST);
+        }
+        User user = users.get(name);
+        // Check if user exists
+        if (user == null) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Status.NOT_FOUND);
+        }
+        return user;
+    }
+
+    @Override
+    public Response resp_internal_getUser(String name) {
+        return null;
+    }
 }

@@ -41,6 +41,22 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         }
     }
 
+    public void clt_subUser(String user, String userSub, String pwd) {
+        Response r = target.path("/sub").queryParam(FeedsService.USER, user)
+                .queryParam(FeedsService.USERSUB, userSub)
+                .queryParam(FeedsService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(Entity.json(null), MediaType.APPLICATION_JSON));
+        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
+            System.out.println("Success, user subscribed");
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+    }
+
+    public void clt_unsubscribeUser(String user, String userSub, String pwd) {
+
+    }
+
     public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
 
     }
@@ -53,13 +69,6 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public void clt_subUser(String user, String userSub, String pwd) {
-
-    }
-
-    public void clt_unsubscribeUser(String user, String userSub, String pwd) {
-
-    }
 
     public List<String> clt_listSubs(String user) {
         return null;

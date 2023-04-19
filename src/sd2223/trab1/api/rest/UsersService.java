@@ -97,4 +97,14 @@ public interface UsersService {
     @Produces(MediaType.APPLICATION_JSON)
     Response resp_getUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd);
 
+    @GET
+    @Path("/internal/{" + NAME + "}")
+    @Produces(MediaType.APPLICATION_JSON)
+    User internal_getUser(@PathParam(NAME) String name);
+
+    @GET
+    @Path("/internalresp/{" + NAME + "}")
+    @Produces(MediaType.APPLICATION_JSON)
+    Response resp_internal_getUser(@PathParam(NAME) String name);
+
 }
