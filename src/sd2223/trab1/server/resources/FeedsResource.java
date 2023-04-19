@@ -84,6 +84,7 @@ public class FeedsResource implements FeedsService {
             this.subs.putIfAbsent(subscribed, new ArrayList<>());
             List<String> listSubs = this.subs.get(subscribed);
             if (!listSubs.contains(subscriber)) {
+                Log.info("Success, " + subscriber + " has subscribed to " + subscribed);
                 listSubs.add(subscriber);
             }
         }
@@ -92,7 +93,46 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
+        Log.info("unsubscribeUser : " + user + " " + userSub + " " + pwd);
+        if (user == null || userSub == null || pwd == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String unsubscriber = user.split("@")[0];
+        final String unsubscriberDomain = user.split("@")[1];
+        final String subscribed = userSub.split("@")[0];
+        final String subscribedDomain = userSub.split("@")[1];
+        var respGetUnsubscriber = new RestUsersClient(unsubscriberDomain).resp_getUser(unsubscriber, pwd);
+        var respGetSubscribed = new RestUsersClient(subscribedDomain).resp_internal_getUser(subscribed);
 
+        if (respGetUnsubscriber.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUnsubscriber.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            Log.info("Password is incorrect");
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        } else if (respGetUnsubscriber.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetSubscribed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetSubscribed.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUnsubscriber.getStatus() == Response.Status.OK.getStatusCode() && respGetUnsubscriber.hasEntity()
+                && respGetSubscribed.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscribed.hasEntity()) {
+            List<String> listSubs = this.subs.get(subscribed);
+            if (listSubs != null) {
+                if (listSubs.remove(unsubscriber)) {
+                    Log.info("Success, " + unsubscriber + " has unsubscribed to " + subscribed);
+                } else {
+                    Log.info("Success, " + unsubscriber + " was not subscribed to " + subscribed);
+                }
+            }
+        }
     }
 
     @Override

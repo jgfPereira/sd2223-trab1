@@ -55,8 +55,18 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public void clt_unsubscribeUser(String user, String userSub, String pwd) {
-
+    public Void clt_unsubscribeUser(String user, String userSub, String pwd) {
+        Response r = target.path("/sub")
+                .path(user)
+                .path(userSub)
+                .queryParam(UsersService.PWD, pwd).request()
+                .delete();
+        if (r.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+            System.out.println("Success, " + user + " has unsubscribed to " + userSub);
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+        return null;
     }
 
     public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
@@ -88,7 +98,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
-
+        super.reTry(() -> clt_unsubscribeUser(user, userSub, pwd));
     }
 
     @Override
