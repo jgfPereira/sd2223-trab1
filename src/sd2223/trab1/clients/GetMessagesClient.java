@@ -2,7 +2,6 @@ package sd2223.trab1.clients;
 
 import sd2223.trab1.api.Message;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -14,7 +13,7 @@ public class GetMessagesClient {
         System.setProperty("java.net.preferIPv4Stack", "true");
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("Use: java sd2223trab1.clients.GetMessagesClient user time");
             return;

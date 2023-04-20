@@ -101,14 +101,26 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
-
-    }
-
     public Message clt_getMessage(String user, long mid) {
+        Response r = target.path(user)
+                .path(Long.toString(mid))
+                .request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
+            Message msg = r.readEntity(Message.class);
+            System.out.println("Success, fetched msg: " + msg);
+            return msg;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
         return null;
     }
 
+
+    public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
+
+    }
 
     @Override
     public long postMessage(String user, String pwd, Message msg) {
@@ -132,7 +144,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
 
     @Override
     public Message getMessage(String user, long mid) {
-        return null;
+        return super.reTry(() -> clt_getMessage(user, mid));
     }
 
     @Override

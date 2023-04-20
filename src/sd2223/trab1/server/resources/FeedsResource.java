@@ -203,12 +203,46 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void removeFromPersonalFeed(String user, long mid, String pwd) {
+    public Message getMessage(String user, long mid) {
+        Log.info("getMessage : " + mid + ", of user " + user);
+        if (user == null || mid < 0) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String msgUser = user.split("@")[0];
+        final String msgUserDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(msgUserDomain).resp_internal_getUser(msgUser);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            List<Message> lmsg = this.feeds.getOrDefault(msgUser, new ArrayList<>());
+            Message m = this.getMessageById(lmsg, mid);
+            if (m == null) {
+                Log.info("Message does not exist");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            return m;
+        }
+        Log.info("Some error occurred");
+        return null;
+    }
 
+    private Message getMessageById(List<Message> lmsg, long mid) {
+        for (Message m : lmsg) {
+            if (m.getId() == mid) {
+                return m;
+            }
+        }
+        return null;
     }
 
     @Override
-    public Message getMessage(String user, long mid) {
-        return null;
+    public void removeFromPersonalFeed(String user, long mid, String pwd) {
+
     }
 }
