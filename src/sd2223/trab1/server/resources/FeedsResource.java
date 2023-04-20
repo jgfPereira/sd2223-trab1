@@ -183,8 +183,13 @@ public class FeedsResource implements FeedsService {
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             List<Message> allFeed = new ArrayList<>();
             List<Message> userMessages = this.feeds.getOrDefault(feedUser, new ArrayList<>());
+            Log.info("NUM OF USER MSG BEFORE ADDNEWER ----------------> " + userMessages.size());
             this.addMessagesNewer(allFeed, userMessages, time);
             List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
+            Log.info("NUM OF USER MSG ----------------> " + userMessages.size());
+            Log.info("NUM OF SUBSCRIBERS ----------------> " + userSubs.size());
+            Log.info("NUM OF MSG TILL NOW ----------------> " + allFeed.size());
+            Log.info("ALL FEED TILL NOW ----> " + allFeed);
             for (String subscriber : userSubs) {
                 String subscriberName = subscriber.split("@")[0];
                 List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
@@ -197,9 +202,15 @@ public class FeedsResource implements FeedsService {
 
     private void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
         for (Message m : other) {
-            if (m.getCreationTime() >= time) {
+            if (m.getCreationTime() > time) {
                 allFeed.add(m);
             }
+        }
+    }
+
+    private void addAllMessages(List<Message> allMsgs, List<Message> other) {
+        for (Message m : other) {
+            allMsgs.add(m);
         }
     }
 
@@ -221,7 +232,15 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<Message> lmsg = this.feeds.getOrDefault(msgUser, new ArrayList<>());
+            List<Message> lmsg = new ArrayList<>();
+            List<Message> userMessages = this.feeds.getOrDefault(msgUser, new ArrayList<>());
+            this.addAllMessages(lmsg, userMessages);
+            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
+            for (String subscriber : userSubs) {
+                String subscriberName = subscriber.split("@")[0];
+                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
+                this.addAllMessages(lmsg, subscriberMessages);
+            }
             Message m = this.getMessageById(lmsg, mid);
             if (m == null) {
                 Log.info("Message does not exist");
