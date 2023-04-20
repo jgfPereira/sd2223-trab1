@@ -24,7 +24,7 @@ public class FeedsResource implements FeedsService {
     @Override
     public long postMessage(String user, String pwd, Message msg) {
         Log.info("postMessage : " + user + " " + msg);
-        if (user == null || pwd == null || msg == null) {
+        if (user == null || pwd == null || msg == null || !(user.split("@")[1].equals(msg.getDomain()))) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
@@ -183,16 +183,12 @@ public class FeedsResource implements FeedsService {
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             List<Message> allFeed = new ArrayList<>();
             List<Message> userMessages = this.feeds.getOrDefault(feedUser, new ArrayList<>());
-            Log.info("NUM OF USER MSG BEFORE ADDNEWER ----------------> " + userMessages.size());
             this.addMessagesNewer(allFeed, userMessages, time);
             List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
-            Log.info("NUM OF USER MSG ----------------> " + userMessages.size());
-            Log.info("NUM OF SUBSCRIBERS ----------------> " + userSubs.size());
-            Log.info("NUM OF MSG TILL NOW ----------------> " + allFeed.size());
-            Log.info("ALL FEED TILL NOW ----> " + allFeed);
             for (String subscriber : userSubs) {
                 String subscriberName = subscriber.split("@")[0];
                 List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
+                Log.info(subscriberName + "--------> " + subscriberMessages);
                 this.addMessagesNewer(allFeed, subscriberMessages, time);
             }
             return allFeed;
