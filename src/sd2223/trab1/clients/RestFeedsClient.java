@@ -118,8 +118,18 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     }
 
 
-    public void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
-
+    public Void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
+        Response r = target.path(user)
+                .path(Long.toString(mid))
+                .queryParam(FeedsService.PWD, pwd)
+                .request()
+                .delete();
+        if (r.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+            System.out.println("Success, removed msg with id : " + mid);
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+        return null;
     }
 
     @Override
@@ -139,7 +149,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
 
     @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
-
+        super.reTry(() -> clt_removeFromPersonalFeed(user, mid, pwd));
     }
 
     @Override

@@ -243,6 +243,34 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
-
+        Log.info("removeFromPersonalFeed : " + mid + ", of user " + user);
+        if (user == null || pwd == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String uname = user.split("@")[0];
+        final String userDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(userDomain).resp_getUser(uname, pwd);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            Log.info("Password is incorrect");
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            List<Message> lmsg = this.feeds.getOrDefault(uname, new ArrayList<>());
+            Message m = this.getMessageById(lmsg, mid);
+            if (m == null) {
+                Log.info("Message does not exist");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            } else {
+                lmsg.remove(m);
+                Log.info("Message removed successfully");
+            }
+        }
     }
 }
