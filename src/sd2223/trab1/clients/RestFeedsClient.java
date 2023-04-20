@@ -48,7 +48,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
                 .queryParam(UsersService.PWD, pwd).request()
                 .post(null);
         if (r.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            System.out.println("Success, " + user + " has subscribed to " + userSub);
+            System.out.println("Success, " + userSub + " has subscribed to " + user);
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
         }
@@ -62,7 +62,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
                 .queryParam(UsersService.PWD, pwd).request()
                 .delete();
         if (r.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            System.out.println("Success, " + user + " has unsubscribed to " + userSub);
+            System.out.println("Success, " + userSub + " has unsubscribed to " + user);
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
         }

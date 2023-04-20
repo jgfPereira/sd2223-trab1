@@ -55,41 +55,40 @@ public class FeedsResource implements FeedsService {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        final String subscriber = user.split("@")[0];
-        final String subscriberDomain = user.split("@")[1];
-        final String subscribed = userSub.split("@")[0];
-        final String subscribedDomain = userSub.split("@")[1];
-        var respGetSubscriber = new RestUsersClient(subscriberDomain).resp_getUser(subscriber, pwd);
-        var respGetSubscribed = new RestUsersClient(subscribedDomain).resp_internal_getUser(subscribed);
+        final String followed = user.split("@")[0];
+        final String followedDomain = user.split("@")[1];
+        final String follower = userSub.split("@")[0];
+        final String followerDomain = userSub.split("@")[1];
+        var respGetFollowed = new RestUsersClient(followedDomain).resp_getUser(followed, pwd);
+        var respGetFollower = new RestUsersClient(followerDomain).resp_internal_getUser(follower);
 
-        if (respGetSubscriber.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+        if (respGetFollowed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        } else if (respGetSubscriber.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+        } else if (respGetFollowed.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
             Log.info("Password is incorrect");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
-        } else if (respGetSubscriber.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+        } else if (respGetFollowed.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        if (respGetSubscribed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+        if (respGetFollower.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        } else if (respGetSubscribed.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+        } else if (respGetFollower.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        if (respGetSubscriber.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscriber.hasEntity()
-                && respGetSubscribed.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscribed.hasEntity()) {
-            this.subs.putIfAbsent(subscribed, new ArrayList<>());
-            List<String> listSubs = this.subs.get(subscribed);
-            if (!listSubs.contains(subscriber)) {
-                Log.info("Success, " + subscriber + " has subscribed to " + subscribed);
-                listSubs.add(subscriber);
+        if (respGetFollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetFollowed.hasEntity()
+                && respGetFollower.getStatus() == Response.Status.OK.getStatusCode() && respGetFollower.hasEntity()) {
+            this.subs.putIfAbsent(user, new ArrayList<>());
+            List<String> listSubs = this.subs.get(user);
+            if (!listSubs.contains(userSub)) {
+                Log.info("Success, " + follower + " has subscribed to " + followed);
+                listSubs.add(userSub);
             }
         }
     }
-
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
@@ -98,39 +97,41 @@ public class FeedsResource implements FeedsService {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        final String unsubscriber = user.split("@")[0];
-        final String unsubscriberDomain = user.split("@")[1];
-        final String subscribed = userSub.split("@")[0];
-        final String subscribedDomain = userSub.split("@")[1];
-        var respGetUnsubscriber = new RestUsersClient(unsubscriberDomain).resp_getUser(unsubscriber, pwd);
-        var respGetSubscribed = new RestUsersClient(subscribedDomain).resp_internal_getUser(subscribed);
+        final String unfollowed = user.split("@")[0];
+        final String unfollowedDomain = user.split("@")[1];
+        final String unfollower = userSub.split("@")[0];
+        final String unfollowerDomain = userSub.split("@")[1];
+        var respGetUnfollowed = new RestUsersClient(unfollowedDomain).resp_getUser(unfollowed, pwd);
+        var respGetUnfollower = new RestUsersClient(unfollowerDomain).resp_internal_getUser(unfollower);
 
-        if (respGetUnsubscriber.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+        if (respGetUnfollowed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        } else if (respGetUnsubscriber.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+        } else if (respGetUnfollowed.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
             Log.info("Password is incorrect");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
-        } else if (respGetUnsubscriber.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+        } else if (respGetUnfollowed.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        if (respGetSubscribed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+        if (respGetUnfollower.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        } else if (respGetSubscribed.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+        } else if (respGetUnfollower.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        if (respGetUnsubscriber.getStatus() == Response.Status.OK.getStatusCode() && respGetUnsubscriber.hasEntity()
-                && respGetSubscribed.getStatus() == Response.Status.OK.getStatusCode() && respGetSubscribed.hasEntity()) {
-            List<String> listSubs = this.subs.get(subscribed);
+        if (respGetUnfollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollowed.hasEntity()
+                && respGetUnfollower.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollower.hasEntity()) {
+            List<String> listSubs = this.subs.get(user);
             if (listSubs != null) {
-                if (listSubs.remove(unsubscriber)) {
-                    Log.info("Success, " + unsubscriber + " has unsubscribed to " + subscribed);
+                if (listSubs.remove(userSub)) {
+                    Log.info("Success, " + unfollower + " has unsubscribed to " + unfollowed);
                 } else {
-                    Log.info("Success, " + unsubscriber + " was not subscribed to " + subscribed);
+                    Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
                 }
+            } else {
+                Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
             }
         }
     }
@@ -153,7 +154,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<String> resSubs = this.subs.get(listUser);
+            List<String> resSubs = this.subs.get(user);
             if (resSubs == null) {
                 resSubs = new ArrayList<>();
             }
@@ -183,10 +184,10 @@ public class FeedsResource implements FeedsService {
             List<Message> allFeed = new ArrayList<>();
             List<Message> userMessages = this.feeds.getOrDefault(feedUser, new ArrayList<>());
             this.addMessagesNewer(allFeed, userMessages, time);
-
-            List<String> userSubs = this.subs.getOrDefault(feedUser, new ArrayList<>());
+            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
             for (String subscriber : userSubs) {
-                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriber, new ArrayList<>());
+                String subscriberName = subscriber.split("@")[0];
+                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
                 this.addMessagesNewer(allFeed, subscriberMessages, time);
             }
             return allFeed;
@@ -196,7 +197,7 @@ public class FeedsResource implements FeedsService {
 
     private void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
         for (Message m : other) {
-            if (m.getCreationTime() > time) {
+            if (m.getCreationTime() >= time) {
                 allFeed.add(m);
             }
         }
