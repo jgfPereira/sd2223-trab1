@@ -205,7 +205,7 @@ public class FeedsResource implements FeedsService {
     @Override
     public Message getMessage(String user, long mid) {
         Log.info("getMessage : " + mid + ", of user " + user);
-        if (user == null || mid < 0) {
+        if (user == null) {
             Log.info("User data invalid");
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
