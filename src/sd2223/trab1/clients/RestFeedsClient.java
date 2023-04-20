@@ -73,11 +73,28 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         Response r = target.path("/sub/list")
                 .path(user)
                 .request()
+                .accept(MediaType.APPLICATION_JSON)
                 .get();
         if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
             List<String> userSubs = r.readEntity(List.class);
-            System.out.println("Success, list of subscribers: " + userSubs);
+            System.out.println("Success, list of subscribers (" + userSubs.size() + " subs): " + userSubs);
             return userSubs;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+        return null;
+    }
+
+    public List<Message> clt_getMessages(String user, long time) {
+        Response r = target.path(user)
+                .queryParam(FeedsService.TIME, time)
+                .request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
+            List<Message> allFeed = r.readEntity(List.class);
+            System.out.println("Success, feed (" + allFeed.size() + " messages): " + allFeed);
+            return allFeed;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
         }
@@ -89,10 +106,6 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     }
 
     public Message clt_getMessage(String user, long mid) {
-        return null;
-    }
-
-    public List<Message> clt_getMessages(String user, long time) {
         return null;
     }
 
@@ -124,7 +137,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
 
     @Override
     public List<Message> getMessages(String user, long time) {
-        return null;
+        return super.reTry(() -> clt_getMessages(user, time));
     }
 
     @Override

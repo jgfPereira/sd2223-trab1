@@ -163,17 +163,52 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
+    public List<Message> getMessages(String user, long time) {
+        Log.info("getMessages : " + user + ", time newer then " + time);
+        if (user == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String feedUser = user.split("@")[0];
+        final String feedUserDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(feedUserDomain).resp_internal_getUser(feedUser);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            List<Message> allFeed = new ArrayList<>();
+            List<Message> userMessages = this.feeds.getOrDefault(feedUser, new ArrayList<>());
+            this.addMessagesNewer(allFeed, userMessages, time);
+
+            List<String> userSubs = this.subs.getOrDefault(feedUser, new ArrayList<>());
+            for (String subscriber : userSubs) {
+                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriber, new ArrayList<>());
+                this.addMessagesNewer(allFeed, subscriberMessages, time);
+            }
+            return allFeed;
+        }
+        return null;
+    }
+
+    private void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
+        for (Message m : other) {
+            if (m.getCreationTime() > time) {
+                allFeed.add(m);
+            }
+        }
+    }
+
+    @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
 
     }
 
     @Override
     public Message getMessage(String user, long mid) {
-        return null;
-    }
-
-    @Override
-    public List<Message> getMessages(String user, long time) {
         return null;
     }
 }

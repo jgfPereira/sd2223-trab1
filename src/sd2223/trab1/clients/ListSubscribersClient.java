@@ -21,7 +21,11 @@ public class ListSubscribersClient {
         final String domain = user.split("@")[1];
         Log.info("Sending request to server.");
         List<String> userSubs = new RestFeedsClient(domain).listSubs(user);
-        Log.info(userSubs.toString());
-        System.out.println("Success, list of subscribers: " + userSubs);
+        if (userSubs != null) {
+            Log.info(userSubs.toString());
+            System.out.println("Success, list of subscribers (" + userSubs.size() + " subs): " + userSubs);
+        } else {
+            Log.info("List is null, some error occurred");
+        }
     }
 }
