@@ -17,8 +17,12 @@ import java.util.logging.Logger;
 public class FeedsResource implements FeedsService {
 
     private static final Logger Log = Logger.getLogger(FeedsResource.class.getName());
-    private final Map<String, List<Message>> feeds = new HashMap<>();
-    private final Map<String, List<String>> subs = new HashMap<>();
+
+    private static final Map<String, List<Message>> userOnlyFeeds = new HashMap<>();
+    private static final Map<String, List<Message>> feeds = new HashMap<>();
+    private static final Map<String, List<String>> subs = new HashMap<>();
+    private static final Map<String, List<String>> userFollowing = new HashMap<>();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public FeedsResource() {
     }
@@ -37,8 +41,17 @@ public class FeedsResource implements FeedsService {
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             long msgId = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
             msg.setId(msgId);
-            this.feeds.putIfAbsent(user, new ArrayList<>());
-            this.feeds.get(user).add(msg);
+            userOnlyFeeds.putIfAbsent(user, new ArrayList<>());
+            userOnlyFeeds.get(user).add(msg);
+            feeds.putIfAbsent(user, new ArrayList<>());
+            feeds.get(user).add(msg);
+            List<String> userFollowingList = userFollowing.getOrDefault(user, new ArrayList<>());
+            Log.info(user + " is following: ------> " + userFollowingList);
+            for (String followed : userFollowingList) {
+//                feeds.putIfAbsent(followed, new ArrayList<>());
+//                feeds.get(followed).add(msg);cls
+                new RestFeedsClient(followed.split("@")[1]).addMsgToFollowed(user, msg);
+            }
             return msgId;
         } else if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
@@ -84,13 +97,28 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetFollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetFollowed.hasEntity()
                 && respGetFollower.getStatus() == Response.Status.OK.getStatusCode() && respGetFollower.hasEntity()) {
-            this.subs.putIfAbsent(user, new ArrayList<>());
-            List<String> listSubs = this.subs.get(user);
+            subs.putIfAbsent(user, new ArrayList<>());
+            List<String> listSubs = subs.get(user);
             if (!listSubs.contains(userSub)) {
                 Log.info("Success, " + follower + " has subscribed to " + followed);
                 listSubs.add(userSub);
+//                List<Message> subMsgs = this.getSubMsgs(user, userSub);
+//                this.feeds.putIfAbsent(user, new ArrayList<>());
+//                this.addAllMessages(this.feeds.get(user), subMsgs);
+                userFollowing.putIfAbsent(userSub, new ArrayList<>());
+                userFollowing.get(userSub).add(user);
             }
         }
+    }
+
+    private List<Message> getSubMsgs(String user, String userSub) {
+        var subscriberOnlyMsgs = new RestFeedsClient(userSub.split("@")[1]).getUserOnlyMessages(userSub);
+        if (subscriberOnlyMsgs != null) {
+            List<Message> subOnlyMsgList = mapper.convertValue(subscriberOnlyMsgs, new TypeReference<List<Message>>() {
+            });
+            return subOnlyMsgList;
+        }
+        return null;
     }
 
     @Override
@@ -126,10 +154,12 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetUnfollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollowed.hasEntity()
                 && respGetUnfollower.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollower.hasEntity()) {
-            List<String> listSubs = this.subs.get(user);
+            List<String> listSubs = subs.get(user);
             if (listSubs != null) {
                 if (listSubs.remove(userSub)) {
                     Log.info("Success, " + unfollower + " has unsubscribed to " + unfollowed);
+                    userFollowing.get(userSub).remove(user);
+                    //TODO remove unfollower messages from user feed
                 } else {
                     Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
                 }
@@ -157,7 +187,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<String> resSubs = this.subs.get(user);
+            List<String> resSubs = subs.get(user);
             if (resSubs == null) {
                 resSubs = new ArrayList<>();
             }
@@ -167,7 +197,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public List<Message> getUserOnlyMessages(String user) {
+    public synchronized List<Message> getUserOnlyMessages(String user) {
         Log.info("getUserOnlyMessages : " + user);
         if (user == null) {
             Log.info("User data invalid");
@@ -184,9 +214,33 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            return this.feeds.getOrDefault(user, new ArrayList<>());
+            return userOnlyFeeds.getOrDefault(user, new ArrayList<>());
         }
         return null;
+    }
+
+    @Override
+    public synchronized void addMsgToFollowed(String user, Message msg) {
+        Log.info("postMessage : " + user + " " + msg);
+        if (user == null || msg == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        final String uname = user.split("@")[0];
+        final String userDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(userDomain).resp_internal_getUser(uname);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            feeds.putIfAbsent(user, new ArrayList<>());
+            feeds.get(user).add(msg);
+        }
     }
 
     @Override
@@ -208,18 +262,8 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             List<Message> allFeed = new ArrayList<>();
-            List<Message> userMessages = this.feeds.getOrDefault(user, new ArrayList<>());
-            this.addMessagesNewer(allFeed, userMessages, time);
-            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
-            for (String subscriber : userSubs) {
-                var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
-                if (subscriberOnlyMsgs != null) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    List<Message> subOnlyMsgList = mapper.convertValue(subscriberOnlyMsgs, new TypeReference<List<Message>>() {
-                    });
-                    this.addMessagesNewer(allFeed, subOnlyMsgList, time);
-                }
-            }
+            List<Message> allMsgs = feeds.getOrDefault(user, new ArrayList<>());
+            this.addMessagesNewer(allFeed, allMsgs, time);
             return allFeed;
         }
         return null;
@@ -257,19 +301,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            ObjectMapper mapper = new ObjectMapper();
-            List<Message> lmsg = new ArrayList<>();
-            List<Message> userMessages = this.feeds.getOrDefault(user, new ArrayList<>());
-            this.addAllMessages(lmsg, userMessages);
-            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
-            for (String subscriber : userSubs) {
-                var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
-                if (subscriberOnlyMsgs != null) {
-                    List<Message> subOnlyMsgList = mapper.convertValue(subscriberOnlyMsgs, new TypeReference<List<Message>>() {
-                    });
-                    this.addAllMessages(lmsg, subOnlyMsgList);
-                }
-            }
+            List<Message> lmsg = feeds.getOrDefault(user, new ArrayList<>());
             Message m = this.getMessageById(lmsg, mid);
             if (m == null) {
                 Log.info("Message does not exist");
@@ -311,7 +343,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<Message> lmsg = this.feeds.getOrDefault(user, new ArrayList<>());
+            List<Message> lmsg = feeds.getOrDefault(user, new ArrayList<>());
             Message m = this.getMessageById(lmsg, mid);
             if (m == null) {
                 Log.info("Message does not exist");

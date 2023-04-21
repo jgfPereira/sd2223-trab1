@@ -130,4 +130,9 @@ public interface FeedsService {
     @Path("/internal/{" + USER + "}")
     @Produces(MediaType.APPLICATION_JSON)
     List<Message> getUserOnlyMessages(@PathParam(USER) String user);
+
+    @POST
+    @Path("/internal/{" + USER + "}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    void addMsgToFollowed(@PathParam(USER) String user, Message msg);
 }

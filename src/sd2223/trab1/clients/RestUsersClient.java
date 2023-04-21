@@ -29,7 +29,7 @@ public class RestUsersClient extends RestClient implements UsersService {
         return this.discovery.knownUrisOf(String.format(SERVICE_NAME_FMT, domain), 1)[0];
     }
 
-    private String clt_createUser(User user) {
+    private synchronized String clt_createUser(User user) {
         Response r = target.request().accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
@@ -42,17 +42,17 @@ public class RestUsersClient extends RestClient implements UsersService {
         }
     }
 
-    private Response clt_resp_getUser(String name, String pwd) {
+    private synchronized Response clt_resp_getUser(String name, String pwd) {
         return target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .get();
     }
 
-    private Response clt_resp_internal_getUser(String name) {
+    private synchronized Response clt_resp_internal_getUser(String name) {
         return target.path("/internal").path(name).request().accept(MediaType.APPLICATION_JSON)
                 .get();
     }
 
-    private User clt_internal_getUser(String name) {
+    private synchronized User clt_internal_getUser(String name) {
         Response r = target.path("/internal").path(name).request().accept(MediaType.APPLICATION_JSON)
                 .get();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
@@ -66,7 +66,7 @@ public class RestUsersClient extends RestClient implements UsersService {
     }
 
 
-    private User clt_getUser(String name, String pwd) {
+    private synchronized User clt_getUser(String name, String pwd) {
         // in the end change to post because password will be visible on url
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .get();
@@ -80,7 +80,7 @@ public class RestUsersClient extends RestClient implements UsersService {
         }
     }
 
-    private User clt_updateUser(String name, String pwd, User user) {
+    private synchronized User clt_updateUser(String name, String pwd, User user) {
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .put(Entity.entity(user, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
@@ -93,7 +93,7 @@ public class RestUsersClient extends RestClient implements UsersService {
         }
     }
 
-    private User clt_deleteUser(String name, String password) {
+    private synchronized User clt_deleteUser(String name, String password) {
         Response r = target.path(name).queryParam(UsersService.PWD, password).request()
                 .accept(MediaType.APPLICATION_JSON).delete();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
@@ -106,7 +106,7 @@ public class RestUsersClient extends RestClient implements UsersService {
         }
     }
 
-    private List<User> clt_searchUsers(String pattern) {
+    private synchronized List<User> clt_searchUsers(String pattern) {
         Response r = target.path("/").queryParam(UsersService.QUERY, pattern).request()
                 .accept(MediaType.APPLICATION_JSON).get();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
@@ -122,42 +122,42 @@ public class RestUsersClient extends RestClient implements UsersService {
     }
 
     @Override
-    public User deleteUser(String name, String pwd) {
+    public synchronized User deleteUser(String name, String pwd) {
         return super.reTry(() -> clt_deleteUser(name, pwd));
     }
 
     @Override
-    public String createUser(User user) {
+    public synchronized String createUser(User user) {
         return super.reTry(() -> clt_createUser(user));
     }
 
     @Override
-    public User getUser(String name, String pwd) {
+    public synchronized User getUser(String name, String pwd) {
         return super.reTry(() -> clt_getUser(name, pwd));
     }
 
     @Override
-    public Response resp_getUser(String name, String pwd) {
+    public synchronized Response resp_getUser(String name, String pwd) {
         return super.reTry(() -> clt_resp_getUser(name, pwd));
     }
 
     @Override
-    public User internal_getUser(String name) {
+    public synchronized User internal_getUser(String name) {
         return super.reTry(() -> clt_internal_getUser(name));
     }
 
     @Override
-    public Response resp_internal_getUser(String name) {
+    public synchronized Response resp_internal_getUser(String name) {
         return super.reTry(() -> clt_resp_internal_getUser(name));
     }
 
     @Override
-    public User updateUser(String name, String pwd, User user) {
+    public synchronized User updateUser(String name, String pwd, User user) {
         return super.reTry(() -> clt_updateUser(name, pwd, user));
     }
 
     @Override
-    public List<User> searchUsers(String pattern) {
+    public synchronized List<User> searchUsers(String pattern) {
         return super.reTry(() -> clt_searchUsers(pattern));
     }
 }
