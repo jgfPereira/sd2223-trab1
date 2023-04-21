@@ -23,7 +23,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public String createUser(User user) {
+    public synchronized String createUser(User user) {
         Log.info("createUser : " + user);
         // Check if user data is valid
         if (user.getName() == null || user.getPwd() == null || user.getDisplayName() == null
@@ -41,7 +41,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public User getUser(String name, String pwd) {
+    public synchronized User getUser(String name, String pwd) {
         Log.info("getUser : user = " + name + "; pwd = " + pwd);
         // Check if user is valid
         if (name == null || pwd == null) {
@@ -63,7 +63,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public User updateUser(String name, String password, User user) {
+    public synchronized User updateUser(String name, String password, User user) {
         Log.info("updateUser : name = " + name + "; pwd = " + password + " ; user = " + user);
         // Check if user is valid
         if (name == null || password == null || user == null) {
@@ -87,7 +87,7 @@ public class UsersResource implements UsersService {
         return user;
     }
 
-    private void handleNullFields(User user, User userTemp) {
+    private synchronized void handleNullFields(User user, User userTemp) {
         if (user.getDomain().equals("null")) {
             user.setDomain(userTemp.getDomain());
         }
@@ -100,7 +100,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public User deleteUser(String name, String password) {
+    public synchronized User deleteUser(String name, String password) {
         Log.info("deleteUser : user = " + name + "; pwd = " + password);
         // Check if user is valid
         if (name == null || password == null) {
@@ -123,7 +123,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public List<User> searchUsers(String pattern) {
+    public synchronized List<User> searchUsers(String pattern) {
         Log.info("searchUsers : pattern = " + pattern);
         if (pattern == null) {
             Log.info("Invalid Pattern");
@@ -140,12 +140,12 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public Response resp_getUser(String name, String pwd) {
+    public synchronized Response resp_getUser(String name, String pwd) {
         return null;
     }
 
     @Override
-    public User internal_getUser(String name) {
+    public synchronized User internal_getUser(String name) {
         Log.info("getUser : user = " + name);
         // Check if user is valid
         if (name == null) {
@@ -162,7 +162,7 @@ public class UsersResource implements UsersService {
     }
 
     @Override
-    public Response resp_internal_getUser(String name) {
+    public synchronized Response resp_internal_getUser(String name) {
         return null;
     }
 }
