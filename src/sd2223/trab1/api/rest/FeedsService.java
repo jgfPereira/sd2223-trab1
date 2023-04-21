@@ -125,4 +125,9 @@ public interface FeedsService {
     @Path("/sub/list/{" + USER + "}")
     @Produces(MediaType.APPLICATION_JSON)
     List<String> listSubs(@PathParam(USER) String user);
+
+    @GET
+    @Path("/internal/{" + USER + "}")
+    @Produces(MediaType.APPLICATION_JSON)
+    List<Message> getUserOnlyMessages(@PathParam(USER) String user);
 }

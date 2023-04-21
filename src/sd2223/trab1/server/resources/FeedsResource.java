@@ -1,10 +1,13 @@
 package sd2223.trab1.server.resources;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.rest.FeedsService;
+import sd2223.trab1.clients.RestFeedsClient;
 import sd2223.trab1.clients.RestUsersClient;
 
 import java.util.*;
@@ -22,7 +25,7 @@ public class FeedsResource implements FeedsService {
 
 
     @Override
-    public long postMessage(String user, String pwd, Message msg) {
+    public synchronized long postMessage(String user, String pwd, Message msg) {
         Log.info("postMessage : " + user + " " + msg);
         if (user == null || pwd == null || msg == null || !(user.split("@")[1].equals(msg.getDomain()))) {
             Log.info("User data invalid");
@@ -34,8 +37,8 @@ public class FeedsResource implements FeedsService {
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             long msgId = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
             msg.setId(msgId);
-            this.feeds.putIfAbsent(uname, new ArrayList<>());
-            this.feeds.get(uname).add(msg);
+            this.feeds.putIfAbsent(user, new ArrayList<>());
+            this.feeds.get(user).add(msg);
             return msgId;
         } else if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
@@ -49,7 +52,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void subUser(String user, String userSub, String pwd) {
+    public synchronized void subUser(String user, String userSub, String pwd) {
         Log.info("subUser : " + user + " " + userSub + " " + pwd);
         if (user == null || userSub == null || pwd == null) {
             Log.info("User data invalid");
@@ -91,7 +94,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void unsubscribeUser(String user, String userSub, String pwd) {
+    public synchronized void unsubscribeUser(String user, String userSub, String pwd) {
         Log.info("unsubscribeUser : " + user + " " + userSub + " " + pwd);
         if (user == null || userSub == null || pwd == null) {
             Log.info("User data invalid");
@@ -137,7 +140,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public List<String> listSubs(String user) {
+    public synchronized List<String> listSubs(String user) {
         Log.info("listSubs : " + user);
         if (user == null) {
             Log.info("User data invalid");
@@ -164,7 +167,30 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public List<Message> getMessages(String user, long time) {
+    public List<Message> getUserOnlyMessages(String user) {
+        Log.info("getUserOnlyMessages : " + user);
+        if (user == null) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        final String uname = user.split("@")[0];
+        final String userDomain = user.split("@")[1];
+        var respGetUser = new RestUsersClient(userDomain).resp_internal_getUser(uname);
+        if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        } else if (respGetUser.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
+            Log.info("User data invalid");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            return this.feeds.getOrDefault(user, new ArrayList<>());
+        }
+        return null;
+    }
+
+    @Override
+    public synchronized List<Message> getMessages(String user, long time) {
         Log.info("getMessages : " + user + ", time newer then " + time);
         if (user == null) {
             Log.info("User data invalid");
@@ -182,21 +208,24 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             List<Message> allFeed = new ArrayList<>();
-            List<Message> userMessages = this.feeds.getOrDefault(feedUser, new ArrayList<>());
+            List<Message> userMessages = this.feeds.getOrDefault(user, new ArrayList<>());
             this.addMessagesNewer(allFeed, userMessages, time);
             List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
             for (String subscriber : userSubs) {
-                String subscriberName = subscriber.split("@")[0];
-                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
-                Log.info(subscriberName + "--------> " + subscriberMessages);
-                this.addMessagesNewer(allFeed, subscriberMessages, time);
+                var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
+                if (subscriberOnlyMsgs != null) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<Message> subOnlyMsgList = mapper.convertValue(subscriberOnlyMsgs, new TypeReference<List<Message>>() {
+                    });
+                    this.addMessagesNewer(allFeed, subOnlyMsgList, time);
+                }
             }
             return allFeed;
         }
         return null;
     }
 
-    private void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
+    private synchronized void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
         for (Message m : other) {
             if (m.getCreationTime() > time) {
                 allFeed.add(m);
@@ -204,14 +233,14 @@ public class FeedsResource implements FeedsService {
         }
     }
 
-    private void addAllMessages(List<Message> allMsgs, List<Message> other) {
+    private synchronized void addAllMessages(List<Message> allMsgs, List<Message> other) {
         for (Message m : other) {
             allMsgs.add(m);
         }
     }
 
     @Override
-    public Message getMessage(String user, long mid) {
+    public synchronized Message getMessage(String user, long mid) {
         Log.info("getMessage : " + mid + ", of user " + user);
         if (user == null) {
             Log.info("User data invalid");
@@ -228,14 +257,18 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
+            ObjectMapper mapper = new ObjectMapper();
             List<Message> lmsg = new ArrayList<>();
-            List<Message> userMessages = this.feeds.getOrDefault(msgUser, new ArrayList<>());
+            List<Message> userMessages = this.feeds.getOrDefault(user, new ArrayList<>());
             this.addAllMessages(lmsg, userMessages);
             List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
             for (String subscriber : userSubs) {
-                String subscriberName = subscriber.split("@")[0];
-                List<Message> subscriberMessages = this.feeds.getOrDefault(subscriberName, new ArrayList<>());
-                this.addAllMessages(lmsg, subscriberMessages);
+                var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
+                if (subscriberOnlyMsgs != null) {
+                    List<Message> subOnlyMsgList = mapper.convertValue(subscriberOnlyMsgs, new TypeReference<List<Message>>() {
+                    });
+                    this.addAllMessages(lmsg, subOnlyMsgList);
+                }
             }
             Message m = this.getMessageById(lmsg, mid);
             if (m == null) {
@@ -248,7 +281,7 @@ public class FeedsResource implements FeedsService {
         return null;
     }
 
-    private Message getMessageById(List<Message> lmsg, long mid) {
+    private synchronized Message getMessageById(List<Message> lmsg, long mid) {
         for (Message m : lmsg) {
             if (m.getId() == mid) {
                 return m;
@@ -258,7 +291,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void removeFromPersonalFeed(String user, long mid, String pwd) {
+    public synchronized void removeFromPersonalFeed(String user, long mid, String pwd) {
         Log.info("removeFromPersonalFeed : " + mid + ", of user " + user);
         if (user == null || pwd == null) {
             Log.info("User data invalid");
@@ -278,7 +311,7 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<Message> lmsg = this.feeds.getOrDefault(uname, new ArrayList<>());
+            List<Message> lmsg = this.feeds.getOrDefault(user, new ArrayList<>());
             Message m = this.getMessageById(lmsg, mid);
             if (m == null) {
                 Log.info("Message does not exist");

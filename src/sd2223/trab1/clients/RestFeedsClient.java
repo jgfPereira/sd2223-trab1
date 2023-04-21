@@ -17,7 +17,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     final WebTarget target;
     private final String domain;
 
-    RestFeedsClient(String domain) {
+    public RestFeedsClient(String domain) {
         super();
         this.domain = domain;
         this.serverURI = this.searchServer(domain);
@@ -79,6 +79,21 @@ public class RestFeedsClient extends RestClient implements FeedsService {
             List<String> userSubs = r.readEntity(List.class);
             System.out.println("Success, list of subscribers (" + userSubs.size() + " subs): " + userSubs);
             return userSubs;
+        } else {
+            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
+        }
+        return null;
+    }
+
+    public List<Message> clt_getUserOnlyMessages(String user) {
+        Response r = target.path("internal/" + user)
+                .request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
+            List<Message> userOnlyMsgs = r.readEntity(List.class);
+            System.out.println("Success, user only msgs (" + userOnlyMsgs.size() + " messages): " + userOnlyMsgs);
+            return userOnlyMsgs;
         } else {
             System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
         }
@@ -165,5 +180,10 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     @Override
     public List<String> listSubs(String user) {
         return super.reTry(() -> clt_listSubs(user));
+    }
+
+    @Override
+    public List<Message> getUserOnlyMessages(String user) {
+        return super.reTry(() -> clt_getUserOnlyMessages(user));
     }
 }
