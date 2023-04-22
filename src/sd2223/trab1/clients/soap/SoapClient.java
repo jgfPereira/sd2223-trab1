@@ -4,6 +4,7 @@ package sd2223.trab1.clients.soap;
 import com.sun.xml.ws.client.BindingProviderProperties;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.WebServiceException;
+import sd2223.trab1.api.discovery.Discovery;
 import sd2223.trab1.api.java.Result;
 
 import java.net.MalformedURLException;
@@ -32,10 +33,16 @@ abstract class SoapClient {
     protected static final int RETRY_SLEEP = 3000;
     protected static final String WSDL = "?wsdl";
     private static final Logger Log = Logger.getLogger(SoapClient.class.getName());
-    protected final URI uri;
+    protected URI uri;
+    protected Discovery discovery;
 
     public SoapClient(URI uri) {
         this.uri = uri;
+        this.discovery = Discovery.getInstance();
+    }
+
+    public SoapClient() {
+        this(null);
     }
 
     static private Result.ErrorCode getErrorCodeFrom(Exception e) {

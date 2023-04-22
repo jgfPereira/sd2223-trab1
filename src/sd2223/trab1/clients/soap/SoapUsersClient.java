@@ -13,11 +13,22 @@ import java.util.List;
 
 public class SoapUsersClient extends SoapClient implements Users {
 
+    private static final String SERVICE_NAME_FMT = "%s:users";
     private UsersService stub;
-
+    private String domain;
 
     public SoapUsersClient(URI serverURI) {
         super(serverURI);
+    }
+
+    public SoapUsersClient(String domain) {
+        super();
+        this.domain = domain;
+        this.uri = this.searchServer(domain);
+    }
+
+    private URI searchServer(String domain) {
+        return this.discovery.knownUrisOf(String.format(SERVICE_NAME_FMT, domain), 1)[0];
     }
 
     synchronized private UsersService stub() {
@@ -59,6 +70,5 @@ public class SoapUsersClient extends SoapClient implements Users {
     public Result<List<User>> searchUsers(String pattern) {
         throw new RuntimeException("Not Implemented...");
     }
-
 
 }
