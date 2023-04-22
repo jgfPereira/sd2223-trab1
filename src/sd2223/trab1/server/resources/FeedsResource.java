@@ -7,8 +7,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.rest.FeedsService;
-import sd2223.trab1.clients.RestFeedsClient;
-import sd2223.trab1.clients.RestUsersClient;
+import sd2223.trab1.clients.rest.RestFeedsClient;
+import sd2223.trab1.clients.rest.RestUsersClient;
 
 import java.util.*;
 import java.util.logging.Logger;

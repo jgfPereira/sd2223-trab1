@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -13,7 +13,7 @@ public class UnsubscribeUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223trab1.clients.UnsubscribeUserClient user userSub pwd");
+            System.err.println("Use: java sd2223trab1.clients.rest.UnsubscribeUserClient user userSub pwd");
             return;
         }
         String user = args[0];

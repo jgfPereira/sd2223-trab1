@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import sd2223.trab1.api.Message;
 
@@ -15,7 +15,7 @@ public class GetMessagesClient {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("Use: java sd2223trab1.clients.GetMessagesClient user time");
+            System.err.println("Use: java sd2223trab1.clients.rest.GetMessagesClient user time");
             return;
         }
         String user = args[0];

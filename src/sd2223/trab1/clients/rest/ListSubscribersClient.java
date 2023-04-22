@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +14,7 @@ public class ListSubscribersClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
-            System.err.println("Use: java sd2223trab1.clients.ListSubscribersClient user");
+            System.err.println("Use: java sd2223trab1.clients.rest.ListSubscribersClient user");
             return;
         }
         String user = args[0];

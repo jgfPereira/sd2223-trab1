@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import sd2223.trab1.api.User;
 
@@ -15,7 +15,7 @@ public class CreateUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 4) {
-            System.err.println("Use: java sd2223trab1.clients.CreateUserClient name pwd domain displayName");
+            System.err.println("Use: java sd2223trab1.clients.rest.CreateUserClient name pwd domain displayName");
             return;
         }
         String name = args[0];

@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -16,12 +16,17 @@ public class RestUsersClient extends RestClient implements UsersService {
 
     private static final String SERVICE_NAME_FMT = "%s:users";
     final WebTarget target;
-    private final String domain;
+    private String domain;
 
     public RestUsersClient(String domain) {
         super();
         this.domain = domain;
         this.serverURI = this.searchServer(domain);
+        target = client.target(serverURI).path(UsersService.PATH);
+    }
+
+    public RestUsersClient(URI serverURI) {
+        super(serverURI);
         target = client.target(serverURI).path(UsersService.PATH);
     }
 

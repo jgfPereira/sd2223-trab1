@@ -1,4 +1,4 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.rest;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -13,7 +13,7 @@ public class SearchUsersClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
-            System.err.println("Use: java sd2223.clients.SearchUsersClient pattern domain");
+            System.err.println("Use: java sd2223.clients.rest.SearchUsersClient pattern domain");
             return;
         }
         String pattern = args[0];

@@ -6,13 +6,13 @@ import jakarta.xml.ws.WebFault;
 public class UsersException extends Exception {
 
 
-	public UsersException() {
-		super("");
-	}
+    private static final long serialVersionUID = 1L;
 
-	public UsersException(String errorMessage ) {
-		super(errorMessage);
-	}
-	
-	private static final long serialVersionUID = 1L;
+    public UsersException() {
+        super("");
+    }
+
+    public UsersException(String errorMessage) {
+        super(errorMessage);
+    }
 }
