@@ -27,7 +27,7 @@ public class UsersServer {
         long id = Integer.parseInt(args[1]);
         try {
             ResourceConfig config = new ResourceConfig();
-            config.register(new UsersResource());
+            config.register(UsersResource.class);
             config.register(CustomLoggingFilter.class);
 
             final String ip = InetAddress.getLocalHost().getHostAddress();

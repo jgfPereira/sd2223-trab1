@@ -28,7 +28,7 @@ public class FeedsServer {
         long id = Integer.parseInt(args[1]);
         try {
             ResourceConfig config = new ResourceConfig();
-            config.register(new FeedsResource());
+            config.register(FeedsResource.class);
             config.register(CustomLoggingFilter.class);
 
             final String ip = InetAddress.getLocalHost().getHostAddress();

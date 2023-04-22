@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 @Singleton
 public class UsersResource implements UsersService {
 
-    private Logger Log = Logger.getLogger(UsersResource.class.getName());
-    private Map<String, User> users = new HashMap<>();
+    private static final Logger Log = Logger.getLogger(UsersResource.class.getName());
+    private final Map<String, User> users = new HashMap<>();
 
     public UsersResource() {
     }
@@ -31,12 +31,10 @@ public class UsersResource implements UsersService {
             Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            // Insert user, checking if name already exists
-            if (users.putIfAbsent(user.getName(), user) != null) {
-                Log.info("User already exists");
-                throw new WebApplicationException(Status.CONFLICT);
-            }
+        // Insert user, checking if name already exists
+        if (users.putIfAbsent(user.getName(), user) != null) {
+            Log.info("User already exists");
+            throw new WebApplicationException(Status.CONFLICT);
         }
         Log.fine("User created " + user.getName());
         return user.getName() + "@" + user.getDomain();
@@ -50,20 +48,18 @@ public class UsersResource implements UsersService {
             Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            User user = users.get(name);
-            // Check if user exists
-            if (user == null) {
-                Log.info("User does not exist");
-                throw new WebApplicationException(Status.NOT_FOUND);
-            }
-            // Check if the password is correct
-            if (!user.getPwd().equals(pwd)) {
-                Log.info("Password is incorrect");
-                throw new WebApplicationException(Status.FORBIDDEN);
-            }
-            return user;
+        User user = users.get(name);
+        // Check if user exists
+        if (user == null) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Status.NOT_FOUND);
         }
+        // Check if the password is correct
+        if (!user.getPwd().equals(pwd)) {
+            Log.info("Password is incorrect");
+            throw new WebApplicationException(Status.FORBIDDEN);
+        }
+        return user;
     }
 
     @Override
@@ -74,23 +70,21 @@ public class UsersResource implements UsersService {
             Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            // Check if userTemp exists
-            var userTemp = users.get(name);
-            if (userTemp == null) {
-                Log.info("User does not exist");
-                throw new WebApplicationException(Status.NOT_FOUND);
-            }
-            // Check if the password is correct
-            if (!userTemp.getPwd().equals(password)) {
-                Log.info("Password is incorrect");
-                throw new WebApplicationException(Status.FORBIDDEN);
-            }
-            // fields not to update are passed as 'null' on cli
-            this.handleNullFields(user, userTemp);
-            this.users.put(name, user);
-            return user;
+        // Check if userTemp exists
+        var userTemp = users.get(name);
+        if (userTemp == null) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Status.NOT_FOUND);
         }
+        // Check if the password is correct
+        if (!userTemp.getPwd().equals(password)) {
+            Log.info("Password is incorrect");
+            throw new WebApplicationException(Status.FORBIDDEN);
+        }
+        // fields not to update are passed as 'null' on cli
+        this.handleNullFields(user, userTemp);
+        this.users.put(name, user);
+        return user;
     }
 
     private void handleNullFields(User user, User userTemp) {
@@ -113,21 +107,19 @@ public class UsersResource implements UsersService {
             Log.info("Invalid data");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            // Check if user exists
-            var user = users.get(name);
-            if (user == null) {
-                Log.info("User does not exist");
-                throw new WebApplicationException(Status.NOT_FOUND);
-            }
-            // Check if the password is correct
-            if (!user.getPwd().equals(password)) {
-                Log.info("Password is incorrect");
-                throw new WebApplicationException(Status.FORBIDDEN);
-            }
-            this.users.remove(name);
-            return user;
+        // Check if user exists
+        var user = users.get(name);
+        if (user == null) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Status.NOT_FOUND);
         }
+        // Check if the password is correct
+        if (!user.getPwd().equals(password)) {
+            Log.info("Password is incorrect");
+            throw new WebApplicationException(Status.FORBIDDEN);
+        }
+        this.users.remove(name);
+        return user;
     }
 
     @Override
@@ -137,16 +129,14 @@ public class UsersResource implements UsersService {
             Log.info("Invalid Pattern");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            List<User> res = new ArrayList<>();
-            for (User u : this.users.values()) {
-                if (u.getName().toLowerCase().contains(pattern.toLowerCase())) {
-                    User tmp = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
-                    res.add(tmp);
-                }
+        List<User> res = new ArrayList<>();
+        for (User u : this.users.values()) {
+            if (u.getName().toLowerCase().contains(pattern.toLowerCase())) {
+                User tmp = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
+                res.add(tmp);
             }
-            return res;
         }
+        return res;
     }
 
     @Override
@@ -162,15 +152,13 @@ public class UsersResource implements UsersService {
             Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        synchronized (users) {
-            User user = users.get(name);
-            // Check if user exists
-            if (user == null) {
-                Log.info("User does not exist");
-                throw new WebApplicationException(Status.NOT_FOUND);
-            }
-            return user;
+        User user = users.get(name);
+        // Check if user exists
+        if (user == null) {
+            Log.info("User does not exist");
+            throw new WebApplicationException(Status.NOT_FOUND);
         }
+        return user;
     }
 
     @Override

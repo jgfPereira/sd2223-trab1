@@ -67,6 +67,7 @@ public class RestUsersClient extends RestClient implements UsersService {
 
 
     private User clt_getUser(String name, String pwd) {
+        // in the end change to post because password will be visible on url
         Response r = target.path(name).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .get();
         if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {

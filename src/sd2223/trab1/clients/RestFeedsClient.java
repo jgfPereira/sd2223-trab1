@@ -100,18 +100,6 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public Void clt_addMsgToFollowed(String user, Message msg) {
-        Response r = target.path("internal/" + user)
-                .request()
-                .post(Entity.entity(msg, MediaType.APPLICATION_JSON));
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
-            System.out.println("Success, add msg to " + user);
-        } else {
-            System.out.println("Error, HTTP error status: " + r.getStatus() + " " + r.getStatusInfo().getReasonPhrase());
-        }
-        return null;
-    }
-
     public List<Message> clt_getMessages(String user, long time) {
         Response r = target.path(user)
                 .queryParam(FeedsService.TIME, Long.toString(time))
@@ -197,11 +185,5 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     @Override
     public List<Message> getUserOnlyMessages(String user) {
         return super.reTry(() -> clt_getUserOnlyMessages(user));
-    }
-
-    @Override
-    public void addMsgToFollowed(String user, Message msg) {
-        super.reTry(() -> clt_addMsgToFollowed(user, msg));
-
     }
 }
