@@ -25,15 +25,14 @@ public class SoapFeedsServer {
         String domain = args[0];
         Log.setLevel(Level.INFO);
 
-//        final String ip = InetAddress.getLocalHost().getHostAddress();
-//        final String serviceName = domain + SEPARATOR + SERVICE_TYPE;
-//        final String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
-//
-//        // TODO - change second arg of publish to SoapFeedsWebService
-//        Endpoint.publish(serverURI.replace(ip, "0.0.0.0"), new SoapUsersWebService());
-//        Log.info(String.format("%s Soap Server ready @ %s\n", SERVICE_TYPE, serverURI));
-//
-//        Discovery discovery = Discovery.getInstance();
-//        discovery.announce(serviceName, serverURI);
+        final String ip = InetAddress.getLocalHost().getHostAddress();
+        final String serviceName = domain + SEPARATOR + SERVICE_TYPE;
+        final String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
+
+        Endpoint.publish(serverURI.replace(ip, "0.0.0.0"), new SoapFeedsWebService());
+        Log.info(String.format("%s Soap Server ready @ %s\n", SERVICE_TYPE, serverURI));
+
+        Discovery discovery = Discovery.getInstance();
+        discovery.announce(serviceName, serverURI);
     }
 }

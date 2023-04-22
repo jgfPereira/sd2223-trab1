@@ -8,7 +8,3 @@ COPY target/*jar-with-dependencies.jar sd2223.jar
 
 # copy the file of properties to the docker image
 COPY feeds.props feeds.props
-
-# run Discovery when starting the docker image
-#CMD ["java", "-cp", "sd2223.jar", "sd2223.trab1.server.UsersServer", "nova"]
-

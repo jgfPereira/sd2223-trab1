@@ -17,8 +17,8 @@ public class SoapUsersClient extends SoapClient implements Users {
     private UsersService stub;
     private String domain;
 
-    public SoapUsersClient(URI serverURI) {
-        super(serverURI);
+    public SoapUsersClient(URI uri) {
+        super(uri);
     }
 
     public SoapUsersClient(String domain) {
