@@ -66,7 +66,7 @@ public class UsersResource implements UsersService {
     public User updateUser(String name, String password, User user) {
         Log.info("updateUser : name = " + name + "; pwd = " + password + " ; user = " + user);
         // Check if user is valid
-        if (name == null || password == null || user == null) {
+        if (name == null || password == null || user == null || (!name.equals(user.getName()))) {
             Log.info("User data invalid");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
@@ -81,20 +81,20 @@ public class UsersResource implements UsersService {
             Log.info("Password is incorrect");
             throw new WebApplicationException(Status.FORBIDDEN);
         }
-        // fields not to update are passed as 'null' on cli
+        // fields not to update are passed as null on cli
         this.handleNullFields(user, userTemp);
         this.users.put(name, user);
         return user;
     }
 
     private void handleNullFields(User user, User userTemp) {
-        if (user.getDomain().equals("null")) {
+        if (user.getDomain() == null) {
             user.setDomain(userTemp.getDomain());
         }
-        if (user.getDisplayName().equals("null")) {
+        if (user.getDisplayName() == null) {
             user.setDisplayName(userTemp.getDisplayName());
         }
-        if (user.getPwd().equals("null")) {
+        if (user.getPwd() == null) {
             user.setPwd(userTemp.getPwd());
         }
     }

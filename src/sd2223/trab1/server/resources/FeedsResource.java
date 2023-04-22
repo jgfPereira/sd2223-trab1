@@ -213,8 +213,8 @@ public class FeedsResource implements FeedsService {
                 List<Message> userOnlyMsgList = this.convertToList(userOnlyMsgs);
                 this.addMessagesNewer(allFeed, userOnlyMsgList, time);
             }
-            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
-            for (String subscriber : userSubs) {
+            var userSubsList = new RestFeedsClient(feedUserDomain).listSubs(user);
+            for (String subscriber : userSubsList) {
                 var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
                 if (subscriberOnlyMsgs != null) {
                     List<Message> subOnlyMsgList = this.convertToList(subscriberOnlyMsgs);
@@ -271,8 +271,8 @@ public class FeedsResource implements FeedsService {
                 List<Message> userOnlyMsgList = this.convertToList(userOnlyMsgs);
                 this.addAllMessages(lmsg, userOnlyMsgList);
             }
-            List<String> userSubs = this.subs.getOrDefault(user, new ArrayList<>());
-            for (String subscriber : userSubs) {
+            var userSubsList = new RestFeedsClient(msgUserDomain).listSubs(user);
+            for (String subscriber : userSubsList) {
                 var subscriberOnlyMsgs = new RestFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
                 if (subscriberOnlyMsgs != null) {
                     List<Message> subOnlyMsgList = this.convertToList(subscriberOnlyMsgs);
