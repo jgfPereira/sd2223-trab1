@@ -23,7 +23,7 @@ public class SoapUsersClient extends SoapClient implements Users {
     synchronized private UsersService stub() {
         if (stub == null) {
             QName QNAME = new QName(UsersService.NAMESPACE, UsersService.NAME);
-            Service service = Service.create(super.toURL(super.uri + WSDL), QNAME);
+            Service service = Service.create(toURL(super.uri + WSDL), QNAME);
             this.stub = service.getPort(UsersService.class);
             super.setTimeouts((BindingProvider) stub);
         }

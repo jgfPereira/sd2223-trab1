@@ -9,9 +9,9 @@ import java.util.List;
 @WebService(serviceName = FeedsService.NAME, targetNamespace = FeedsService.NAMESPACE, endpointInterface = FeedsService.INTERFACE)
 public interface FeedsService {
 
-    static final String NAME = "feeds";
-    static final String NAMESPACE = "http://sd2223";
-    static final String INTERFACE = "sd2223.trab1.api.soap.FeedsService";
+    String NAME = "feeds";
+    String NAMESPACE = "http://sd2223";
+    String INTERFACE = "sd2223.trab1.api.soap.FeedsService";
 
     /**
      * Posts a new message in the feed, associating it to the feed of the specific user.
@@ -22,9 +22,9 @@ public interface FeedsService {
      * @param user user of the operation (format user@domain)
      * @param msg  the message object to be posted to the server
      * @param pwd  password of the user sending the message
-     * @throws FORBIDDEN if the publisher does not exist in the current domain or if the pwd is not correct
-     *                   BAD_REQUEST otherwise
      * @return the unique numerical identifier for the posted message;
+     * @throws FeedsException | FORBIDDEN if the publisher does not exist in the current domain or if the pwd is not correct
+     *                        BAD_REQUEST otherwise
      */
     @WebMethod
     long postMessage(String user, String pwd, Message msg) throws FeedsException;
@@ -37,8 +37,8 @@ public interface FeedsService {
      * @param user user feed being accessed (format user@domain)
      * @param mid  the identifier of the message to be deleted
      * @param pwd  password of the user
-     * @throws FORBIDDEN if the publisher does not exist in the current domain or if the pwd is not correct
-     * BAD_REQUEST otherwise
+     * @throws FeedsException | FORBIDDEN if the publisher does not exist in the current domain or if the pwd is not correct
+     *                        BAD_REQUEST otherwise
      */
     @WebMethod
     void removeFromPersonalFeed(String user, long mid, String pwd) throws FeedsException;
@@ -49,7 +49,7 @@ public interface FeedsService {
      * @param user user feed being accessed (format user@domain)
      * @param mid  id of the message
      * @return the message if it exists;
-     * @throws NOT_FOUND    if the user or the message does not exist
+     * @throws FeedsException | NOT_FOUND if the user or the message does not exist
      */
     @WebMethod
     Message getMessage(String user, long mid) throws FeedsException;
@@ -60,8 +60,8 @@ public interface FeedsService {
      *
      * @param user user feed being accessed (format user@domain)
      * @param time the oldest time of the messages to be returned
-     * @throws NOT_FOUND if the user does not exist.
      * @return a list of messages, potentially empty;
+     * @throws FeedsException | NOT_FOUND if the user does not exist.
      */
     @WebMethod
     List<Message> getMessages(String user, long time) throws FeedsException;
@@ -74,8 +74,8 @@ public interface FeedsService {
      * @param user    the user subscribing (following) other user (format user@domain)
      * @param userSub the user to be subscribed (followed) (format user@domain)
      * @param pwd     password of the user to subscribe
-     * @throws NOT_FOUND if the user to be subscribed does not exist
-     * FORBIDDEN if the user does not exist or if the pwd is not correct
+     * @throws FeedsException | NOT_FOUND if the user to be subscribed does not exist
+     *                        FORBIDDEN if the user does not exist or if the pwd is not correct
      */
     @WebMethod
     void subUser(String user, String userSub, String pwd) throws FeedsException;
@@ -88,8 +88,8 @@ public interface FeedsService {
      * @param user    the user unsubscribing (following) other user (format user@domain)
      * @param userSub the identifier of the user to be unsubscribed
      * @param pwd     password of the user to subscribe
-     * @throws FORBIDDEN if the user does not exist or if the pwd is not correct
-     *                   NOT_FOUND the userSub is not subscribed
+     * @throws FeedsException | FORBIDDEN if the user does not exist or if the pwd is not correct
+     *                        NOT_FOUND the userSub is not subscribed
      */
     @WebMethod
     void unsubscribeUser(String user, String userSub, String pwd) throws FeedsException;
@@ -98,7 +98,7 @@ public interface FeedsService {
      * Subscribed users.
      *
      * @param user user being accessed (format user@domain)
-     * @throws NOT_FOUND if the user does not exist
+     * @throws FeedsException | NOT_FOUND if the user does not exist
      */
     @WebMethod
     List<String> listSubs(String user) throws FeedsException;

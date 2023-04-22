@@ -12,7 +12,6 @@ public class UsersClientFactory {
 
     public static Users get(URI serverURI) {
         var uriString = serverURI.toString();
-
         if (uriString.endsWith(REST))
 //            return new RestUsersClient(serverURI);
             return null;

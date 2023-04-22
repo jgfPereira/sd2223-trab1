@@ -31,7 +31,7 @@ abstract class SoapClient {
     protected static final int MAX_RETRIES = 10;
     protected static final int RETRY_SLEEP = 3000;
     protected static final String WSDL = "?wsdl";
-    private static Logger Log = Logger.getLogger(SoapClient.class.getName());
+    private static final Logger Log = Logger.getLogger(SoapClient.class.getName());
     protected final URI uri;
 
     public SoapClient(URI uri) {
@@ -108,11 +108,11 @@ abstract class SoapClient {
         }
     }
 
-    static interface ResultSupplier<T> {
+    interface ResultSupplier<T> {
         T get() throws Exception;
     }
 
-    static interface VoidSupplier {
+    interface VoidSupplier {
         void run() throws Exception;
     }
 }
