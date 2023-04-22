@@ -1,9 +1,8 @@
 package sd2223.trab1.api.java;
 
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,17 +62,85 @@ public class UsersImpl implements Users {
 
     @Override
     public Result<User> updateUser(String name, String pwd, User user) {
-        return null;
+        Log.info("updateUser : name = " + name + "; pwd = " + pwd + " ; user = " + user);
+        // Check if user is valid
+        if (name == null || pwd == null || user == null || (!name.equals(user.getName()))) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        synchronized (users) {
+            // Check if userTemp exists
+            var userTemp = users.get(name);
+            if (userTemp == null) {
+                Log.info("User does not exist");
+                return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+            }
+            // Check if the password is correct
+            if (!userTemp.getPwd().equals(pwd)) {
+                Log.info("Password is incorrect");
+                return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+            }
+            // fields not to update are passed as null
+            this.handleNullFields(user, userTemp);
+            this.users.put(name, user);
+            return new OkResult<>(user);
+        }
+    }
+
+    private void handleNullFields(User user, User userTemp) {
+        if (user.getDomain() == null) {
+            user.setDomain(userTemp.getDomain());
+        }
+        if (user.getDisplayName() == null) {
+            user.setDisplayName(userTemp.getDisplayName());
+        }
+        if (user.getPwd() == null) {
+            user.setPwd(userTemp.getPwd());
+        }
     }
 
     @Override
     public Result<User> deleteUser(String name, String pwd) {
-        return null;
+        Log.info("deleteUser : user = " + name + "; pwd = " + pwd);
+        // Check if user is valid
+        if (name == null || pwd == null) {
+            Log.info("Invalid data");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        synchronized (users) {
+            // Check if user exists
+            var user = users.get(name);
+            if (user == null) {
+                Log.info("User does not exist");
+                return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+            }
+            // Check if the password is correct
+            if (!user.getPwd().equals(pwd)) {
+                Log.info("Password is incorrect");
+                return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+            }
+            this.users.remove(name);
+            return new OkResult<>(user);
+        }
     }
 
     @Override
     public Result<List<User>> searchUsers(String pattern) {
-        return null;
+        Log.info("searchUsers : pattern = " + pattern);
+        if (pattern == null) {
+            Log.info("Invalid Pattern");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        synchronized (users) {
+            List<User> res = new ArrayList<>();
+            for (User u : this.users.values()) {
+                if (u.getName().toLowerCase().contains(pattern.toLowerCase())) {
+                    User tmp = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
+                    res.add(tmp);
+                }
+            }
+            return new OkResult<>(res);
+        }
     }
 
     @Override

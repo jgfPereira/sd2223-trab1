@@ -86,7 +86,7 @@ public class UsersResource implements UsersService {
                 Log.info("Password is incorrect");
                 throw new WebApplicationException(Status.FORBIDDEN);
             }
-            // fields not to update are passed as null on cli
+            // fields not to update are passed as null
             this.handleNullFields(user, userTemp);
             this.users.put(name, user);
             return user;

@@ -33,25 +33,24 @@ public class SoapUsersWebService extends SoapWebService<UsersException> implemen
         return super.fromJavaResult(impl.getUser(name, pwd));
     }
 
-
-    @Override
-    public void verifyPassword(String name, String pwd) throws UsersException {
-        super.fromJavaResult(impl.verifyPassword(name, pwd));
-    }
-
     @Override
     public User updateUser(String name, String pwd, User user) throws UsersException {
-        throw new RuntimeException("Not Implemented...");
+        return super.fromJavaResult(impl.updateUser(name, pwd, user));
     }
 
     @Override
     public User deleteUser(String name, String pwd) throws UsersException {
-        throw new RuntimeException("Not Implemented...");
+        return super.fromJavaResult(impl.deleteUser(name, pwd));
     }
 
     @Override
     public List<User> searchUsers(String pattern) throws UsersException {
-        throw new RuntimeException("Not Implemented...");
+        return super.fromJavaResult(impl.searchUsers(pattern));
+    }
+
+    @Override
+    public void verifyPassword(String name, String pwd) throws UsersException {
+        super.fromJavaResult(impl.verifyPassword(name, pwd));
     }
 
 }
