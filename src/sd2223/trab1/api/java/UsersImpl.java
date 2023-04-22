@@ -147,4 +147,23 @@ public class UsersImpl implements Users {
     public Result<Void> verifyPassword(String name, String pwd) {
         return null;
     }
+
+    @Override
+    public Result<User> internal_getUser(String name) {
+        Log.info("getUser : user = " + name);
+        // Check if user is valid
+        if (name == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        synchronized (users) {
+            User user = users.get(name);
+            // Check if user exists
+            if (user == null) {
+                Log.info("User does not exist");
+                return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+            }
+            return new OkResult<>(user);
+        }
+    }
 }

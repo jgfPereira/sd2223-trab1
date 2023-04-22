@@ -53,4 +53,9 @@ public class SoapUsersWebService extends SoapWebService<UsersException> implemen
         super.fromJavaResult(impl.verifyPassword(name, pwd));
     }
 
+    @Override
+    public User internal_getUser(String name) throws UsersException {
+        return super.fromJavaResult(impl.internal_getUser(name));
+    }
+
 }

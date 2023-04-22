@@ -66,4 +66,6 @@ public interface UsersService {
     List<User> searchUsers(String pattern) throws UsersException;
 
     void verifyPassword(String name, String pwd) throws UsersException;
+
+    User internal_getUser(String name) throws UsersException;
 }
