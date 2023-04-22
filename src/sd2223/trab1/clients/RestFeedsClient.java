@@ -28,7 +28,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return this.discovery.knownUrisOf(String.format(SERVICE_NAME_FMT, domain), 1)[0];
     }
 
-    public synchronized long clt_postMessage(String user, String pwd, Message msg) {
+    public long clt_postMessage(String user, String pwd, Message msg) {
         Response r = target.path(user).queryParam(UsersService.PWD, pwd).request().accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(msg, MediaType.APPLICATION_JSON));
         if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity()) {
@@ -41,7 +41,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         }
     }
 
-    public synchronized Void clt_subUser(String user, String userSub, String pwd) {
+    public Void clt_subUser(String user, String userSub, String pwd) {
         Response r = target.path("/sub")
                 .path(user)
                 .path(userSub)
@@ -55,7 +55,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized Void clt_unsubscribeUser(String user, String userSub, String pwd) {
+    public Void clt_unsubscribeUser(String user, String userSub, String pwd) {
         Response r = target.path("/sub")
                 .path(user)
                 .path(userSub)
@@ -69,7 +69,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized List<String> clt_listSubs(String user) {
+    public List<String> clt_listSubs(String user) {
         Response r = target.path("/sub/list")
                 .path(user)
                 .request()
@@ -85,7 +85,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized List<Message> clt_getUserOnlyMessages(String user) {
+    public List<Message> clt_getUserOnlyMessages(String user) {
         Response r = target.path("internal/" + user)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -100,7 +100,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized Void clt_addMsgToFollowed(String user, Message msg) {
+    public Void clt_addMsgToFollowed(String user, Message msg) {
         Response r = target.path("internal/" + user)
                 .request()
                 .post(Entity.entity(msg, MediaType.APPLICATION_JSON));
@@ -112,7 +112,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized List<Message> clt_getMessages(String user, long time) {
+    public List<Message> clt_getMessages(String user, long time) {
         Response r = target.path(user)
                 .queryParam(FeedsService.TIME, Long.toString(time))
                 .request()
@@ -128,7 +128,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
         return null;
     }
 
-    public synchronized Message clt_getMessage(String user, long mid) {
+    public Message clt_getMessage(String user, long mid) {
         Response r = target.path(user)
                 .path(Long.toString(mid))
                 .request()
@@ -145,7 +145,7 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     }
 
 
-    public synchronized Void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
+    public Void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
         Response r = target.path(user)
                 .path(Long.toString(mid))
                 .queryParam(FeedsService.PWD, pwd)
@@ -160,47 +160,47 @@ public class RestFeedsClient extends RestClient implements FeedsService {
     }
 
     @Override
-    public synchronized long postMessage(String user, String pwd, Message msg) {
+    public long postMessage(String user, String pwd, Message msg) {
         return super.reTry(() -> clt_postMessage(user, pwd, msg));
     }
 
     @Override
-    public synchronized void subUser(String user, String userSub, String pwd) {
+    public void subUser(String user, String userSub, String pwd) {
         super.reTry(() -> clt_subUser(user, userSub, pwd));
     }
 
     @Override
-    public synchronized void unsubscribeUser(String user, String userSub, String pwd) {
+    public void unsubscribeUser(String user, String userSub, String pwd) {
         super.reTry(() -> clt_unsubscribeUser(user, userSub, pwd));
     }
 
     @Override
-    public synchronized void removeFromPersonalFeed(String user, long mid, String pwd) {
+    public void removeFromPersonalFeed(String user, long mid, String pwd) {
         super.reTry(() -> clt_removeFromPersonalFeed(user, mid, pwd));
     }
 
     @Override
-    public synchronized Message getMessage(String user, long mid) {
+    public Message getMessage(String user, long mid) {
         return super.reTry(() -> clt_getMessage(user, mid));
     }
 
     @Override
-    public synchronized List<Message> getMessages(String user, long time) {
+    public List<Message> getMessages(String user, long time) {
         return super.reTry(() -> clt_getMessages(user, time));
     }
 
     @Override
-    public synchronized List<String> listSubs(String user) {
+    public List<String> listSubs(String user) {
         return super.reTry(() -> clt_listSubs(user));
     }
 
     @Override
-    public synchronized List<Message> getUserOnlyMessages(String user) {
+    public List<Message> getUserOnlyMessages(String user) {
         return super.reTry(() -> clt_getUserOnlyMessages(user));
     }
 
     @Override
-    public synchronized void addMsgToFollowed(String user, Message msg) {
+    public void addMsgToFollowed(String user, Message msg) {
         super.reTry(() -> clt_addMsgToFollowed(user, msg));
 
     }
