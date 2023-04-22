@@ -37,8 +37,10 @@ public class FeedsResource implements FeedsService {
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
             long msgId = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
             msg.setId(msgId);
-            this.feeds.putIfAbsent(user, new ArrayList<>());
-            this.feeds.get(user).add(msg);
+            synchronized (feeds) {
+                this.feeds.putIfAbsent(user, new ArrayList<>());
+                this.feeds.get(user).add(msg);
+            }
             return msgId;
         } else if (respGetUser.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
@@ -64,7 +66,6 @@ public class FeedsResource implements FeedsService {
         final String followerDomain = userSub.split("@")[1];
         var respGetFollowed = new RestUsersClient(followedDomain).resp_getUser(followed, pwd);
         var respGetFollower = new RestUsersClient(followerDomain).resp_internal_getUser(follower);
-
         if (respGetFollowed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -84,11 +85,13 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetFollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetFollowed.hasEntity()
                 && respGetFollower.getStatus() == Response.Status.OK.getStatusCode() && respGetFollower.hasEntity()) {
-            this.subs.putIfAbsent(user, new ArrayList<>());
-            List<String> listSubs = this.subs.get(user);
-            if (!listSubs.contains(userSub)) {
-                Log.info("Success, " + follower + " has subscribed to " + followed);
-                listSubs.add(userSub);
+            synchronized (subs) {
+                this.subs.putIfAbsent(user, new ArrayList<>());
+                List<String> listSubs = this.subs.get(user);
+                if (!listSubs.contains(userSub)) {
+                    Log.info("Success, " + follower + " has subscribed to " + followed);
+                    listSubs.add(userSub);
+                }
             }
         }
     }
@@ -106,7 +109,6 @@ public class FeedsResource implements FeedsService {
         final String unfollowerDomain = userSub.split("@")[1];
         var respGetUnfollowed = new RestUsersClient(unfollowedDomain).resp_getUser(unfollowed, pwd);
         var respGetUnfollower = new RestUsersClient(unfollowerDomain).resp_internal_getUser(unfollower);
-
         if (respGetUnfollowed.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
             Log.info("User does not exist");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -126,15 +128,17 @@ public class FeedsResource implements FeedsService {
         }
         if (respGetUnfollowed.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollowed.hasEntity()
                 && respGetUnfollower.getStatus() == Response.Status.OK.getStatusCode() && respGetUnfollower.hasEntity()) {
-            List<String> listSubs = this.subs.get(user);
-            if (listSubs != null) {
-                if (listSubs.remove(userSub)) {
-                    Log.info("Success, " + unfollower + " has unsubscribed to " + unfollowed);
+            synchronized (subs) {
+                List<String> listSubs = this.subs.get(user);
+                if (listSubs != null) {
+                    if (listSubs.remove(userSub)) {
+                        Log.info("Success, " + unfollower + " has unsubscribed to " + unfollowed);
+                    } else {
+                        Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
+                    }
                 } else {
                     Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
                 }
-            } else {
-                Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
             }
         }
     }
@@ -157,11 +161,13 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<String> resSubs = this.subs.get(user);
-            if (resSubs == null) {
-                resSubs = new ArrayList<>();
+            synchronized (subs) {
+                List<String> resSubs = this.subs.get(user);
+                if (resSubs == null) {
+                    resSubs = new ArrayList<>();
+                }
+                return resSubs;
             }
-            return resSubs;
         }
         return null;
     }
@@ -184,7 +190,9 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            return this.feeds.getOrDefault(user, new ArrayList<>());
+            synchronized (feeds) {
+                return this.feeds.getOrDefault(user, new ArrayList<>());
+            }
         }
         return null;
     }
@@ -320,14 +328,16 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         if (respGetUser.getStatus() == Response.Status.OK.getStatusCode() && respGetUser.hasEntity()) {
-            List<Message> lmsg = this.feeds.getOrDefault(user, new ArrayList<>());
-            Message m = this.getMessageById(lmsg, mid);
-            if (m == null) {
-                Log.info("Message does not exist");
-                throw new WebApplicationException(Response.Status.NOT_FOUND);
-            } else {
-                lmsg.remove(m);
-                Log.info("Message removed successfully");
+            synchronized (feeds) {
+                List<Message> lmsg = this.feeds.getOrDefault(user, new ArrayList<>());
+                Message m = this.getMessageById(lmsg, mid);
+                if (m == null) {
+                    Log.info("Message does not exist");
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                } else {
+                    lmsg.remove(m);
+                    Log.info("Message removed successfully");
+                }
             }
         }
     }
