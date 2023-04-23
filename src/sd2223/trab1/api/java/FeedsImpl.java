@@ -296,6 +296,60 @@ public class FeedsImpl implements Feeds {
 
     @Override
     public Result<Message> getMessage(String user, long mid) {
+        Log.info("getMessage : " + mid + ", of user " + user);
+        if (user == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String msgUser = user.split("@")[0];
+        final String msgUserDomain = user.split("@")[1];
+        var getUser = new SoapUsersClient(msgUserDomain).internal_getUser(msgUser);
+        if (!getUser.isOK()) {
+            Log.info(getUser.toString());
+            switch (getUser.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        } else {
+            List<Message> allFeed = new ArrayList<>();
+            var userOnlyMsgs = new SoapFeedsClient(msgUserDomain).getUserOnlyMessages(user);
+            if (userOnlyMsgs.isOK()) {
+                Result<List<Message>> userOnlyMsgList = this.convertToResultListMsg(userOnlyMsgs);
+                this.addAllMessages(allFeed, userOnlyMsgList);
+            }
+            var userSubs = new SoapFeedsClient(msgUserDomain).listSubs(user);
+            Result<List<String>> userSubsList = null;
+            if (userSubs.isOK()) {
+                userSubsList = this.convertToResultListStr(userSubs);
+            }
+            for (String subscriber : userSubsList.value()) {
+                var subscriberOnlyMsgs = new SoapFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
+                if (subscriberOnlyMsgs != null) {
+                    Result<List<Message>> subOnlyMsgList = this.convertToResultListMsg(subscriberOnlyMsgs);
+                    this.addAllMessages(allFeed, subOnlyMsgList);
+                }
+            }
+            Message m = this.getMessageById(allFeed, mid);
+            if (m == null) {
+                Log.info("Message does not exist");
+                return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+            }
+            return new OkResult<>(m);
+        }
+    }
+
+    private Message getMessageById(List<Message> lmsg, long mid) {
+        for (Message m : lmsg) {
+            if (m.getId() == mid) {
+                return m;
+            }
+        }
         return null;
     }
 
