@@ -2,6 +2,8 @@ package sd2223.trab1.api.java;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.clients.soap.SoapFeedsClient;
 import sd2223.trab1.clients.soap.SoapUsersClient;
@@ -355,7 +357,39 @@ public class FeedsImpl implements Feeds {
 
     @Override
     public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
+        Log.info("removeFromPersonalFeed : " + mid + ", of user " + user);
+        if (user == null || pwd == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String uname = user.split("@")[0];
+        final String userDomain = user.split("@")[1];
+        var getUser = new SoapUsersClient(userDomain).getUser(uname, pwd);
+        if (!getUser.isOK()) {
+            Log.info(getUser.toString());
+            switch (getUser.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        } else {
+            synchronized (feeds) {
+                List<Message> lmsg = this.feeds.getOrDefault(user, new ArrayList<>());
+                Message m = this.getMessageById(lmsg, mid);
+                if (m == null) {
+                    Log.info("Message does not exist");
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                } else {
+                    lmsg.remove(m);
+                    Log.info("Message removed successfully");
+                }
+            }
+        }
         return null;
     }
-
 }
