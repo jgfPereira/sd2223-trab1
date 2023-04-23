@@ -15,7 +15,7 @@ public class UpdateUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 6) {
-            System.err.println("Use: java sd2223.trab1.clients.rest.UpdateUserClient name oldpwd oldDomain displayName domain password");
+            System.err.println("Usage: name oldpwd oldDomain displayName domain password");
             return;
         }
         String name = args[0];

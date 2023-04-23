@@ -1,22 +1,22 @@
-package sd2223.trab1.server;
+package sd2223.trab1.server.rest;
 
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import sd2223.trab1.api.discovery.Discovery;
-import sd2223.trab1.server.resources.UsersResource;
+import sd2223.trab1.server.resources.FeedsResource;
 import sd2223.trab1.server.util.CustomLoggingFilter;
 
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.logging.Logger;
 
-public class UsersServer {
+public class FeedsServer {
 
-    public static final int PORT = 8080;
-    public static final String SERVICE_TYPE = "users";
+    public static final int PORT = 8081;
+    public static final String SERVICE_TYPE = "feeds";
     private static final String SEPARATOR = ":";
     private static final String SERVER_URI_FMT = "http://%s:%s/rest";
-    private static final Logger Log = Logger.getLogger(UsersServer.class.getName());
+    private static final Logger Log = Logger.getLogger(FeedsServer.class.getName());
 
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -24,10 +24,9 @@ public class UsersServer {
 
     public static void main(String[] args) {
         String domain = args[0];
-        long id = Integer.parseInt(args[1]);
         try {
             ResourceConfig config = new ResourceConfig();
-            config.register(UsersResource.class);
+            config.register(FeedsResource.class);
             config.register(CustomLoggingFilter.class);
 
             final String ip = InetAddress.getLocalHost().getHostAddress();

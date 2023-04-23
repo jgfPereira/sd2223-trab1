@@ -13,7 +13,7 @@ public class UnsubscribeUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223trab1.clients.rest.UnsubscribeUserClient user userSub pwd");
+            System.err.println("Usage: user userSub pwd");
             return;
         }
         String user = args[0];

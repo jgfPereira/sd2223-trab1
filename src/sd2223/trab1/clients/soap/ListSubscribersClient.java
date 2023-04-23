@@ -22,5 +22,6 @@ public class ListSubscribersClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.listSubs(user);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

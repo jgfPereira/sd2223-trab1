@@ -23,5 +23,6 @@ public class RemoveMessageClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.removeFromPersonalFeed(user, mid, pwd);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

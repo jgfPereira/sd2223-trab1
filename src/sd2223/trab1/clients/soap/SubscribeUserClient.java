@@ -24,5 +24,6 @@ public class SubscribeUserClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.subUser(user, userSub, pwd);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

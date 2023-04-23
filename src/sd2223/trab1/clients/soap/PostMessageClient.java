@@ -27,5 +27,6 @@ public class PostMessageClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.postMessage(user, pwd, msg);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

@@ -13,7 +13,7 @@ public class DeleteUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223.clients.rest.DeleteUserClient name password domain");
+            System.err.println("Usage name password domain");
             return;
         }
         String name = args[0];

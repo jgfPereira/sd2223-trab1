@@ -10,7 +10,6 @@ import sd2223.trab1.api.java.Result;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static sd2223.trab1.api.java.Result.error;
@@ -81,21 +80,6 @@ abstract class SoapClient {
                 return error(Result.ErrorCode.INTERNAL_ERROR);
             }
         return error(Result.ErrorCode.TIMEOUT);
-    }
-
-    protected <T> T reTry(Supplier<T> func) {
-        for (int i = 0; i < MAX_RETRIES; i++)
-            try {
-                return func.get();
-            } catch (WebServiceException x) {
-                x.printStackTrace();
-                Log.fine("Timeout: " + x.getMessage());
-                sleep_ms(RETRY_SLEEP);
-            } catch (Exception x) {
-                x.printStackTrace();
-                break;
-            }
-        return null;
     }
 
     protected <R> Result<R> toJavaResult(ResultSupplier<R> supplier) {

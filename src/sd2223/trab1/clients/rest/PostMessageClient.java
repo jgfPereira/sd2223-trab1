@@ -15,7 +15,7 @@ public class PostMessageClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223trab1.clients.rest.PostMessageClient user pwd msgText");
+            System.err.println("Usage: user pwd msgText");
             return;
         }
         String user = args[0];

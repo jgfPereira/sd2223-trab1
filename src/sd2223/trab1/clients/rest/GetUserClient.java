@@ -13,7 +13,7 @@ public class GetUserClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223trab1.clients.rest.GetUserClient name password domain");
+            System.err.println("Usage: name password domain");
             return;
         }
         String name = args[0];

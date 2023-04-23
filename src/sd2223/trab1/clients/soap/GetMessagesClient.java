@@ -22,5 +22,6 @@ public class GetMessagesClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.getMessages(user, time);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

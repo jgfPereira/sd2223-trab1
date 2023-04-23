@@ -15,7 +15,7 @@ public class GetMessagesClient {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("Use: java sd2223trab1.clients.rest.GetMessagesClient user time");
+            System.err.println("Usage: user time");
             return;
         }
         String user = args[0];

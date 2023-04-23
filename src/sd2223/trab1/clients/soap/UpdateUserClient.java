@@ -3,8 +3,15 @@ package sd2223.trab1.clients.soap;
 import sd2223.trab1.api.User;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class UpdateUserClient {
+
+    private static final Logger Log = Logger.getLogger(UpdateUserClient.class.getName());
+
+    static {
+        System.setProperty("java.net.preferIPv4Stack", "true");
+    }
 
     public static void main(String[] args) throws IOException {
         if (args.length != 6) {
@@ -19,7 +26,9 @@ public class UpdateUserClient {
         String password = args[5];
         var updatedUser = new User(name, password, domain, displayName);
         var soapClient = new SoapUsersClient(oldDomain);
+        Log.info("Sending request to server.");
         var res = soapClient.updateUser(name, oldpwd, updatedUser);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }

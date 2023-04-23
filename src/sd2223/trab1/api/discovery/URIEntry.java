@@ -37,7 +37,7 @@ public class URIEntry {
             return true;
         if (!(obj instanceof URIEntry other))
             return false;
-		return Objects.equals(uri, other.uri);
+        return Objects.equals(uri, other.uri);
     }
 
     @Override

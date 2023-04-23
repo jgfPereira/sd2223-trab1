@@ -14,7 +14,7 @@ public class ListSubscribersClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
-            System.err.println("Use: java sd2223trab1.clients.rest.ListSubscribersClient user");
+            System.err.println("Usage: user");
             return;
         }
         String user = args[0];

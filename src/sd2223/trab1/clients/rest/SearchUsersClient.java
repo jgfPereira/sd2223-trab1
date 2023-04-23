@@ -13,7 +13,7 @@ public class SearchUsersClient {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
-            System.err.println("Use: java sd2223.clients.rest.SearchUsersClient pattern domain");
+            System.err.println("Usage: pattern domain");
             return;
         }
         String pattern = args[0];

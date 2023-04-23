@@ -12,7 +12,7 @@ public class RemoveMessageClient {
 
     public static void main(String[] args) {
         if (args.length != 3) {
-            System.err.println("Use: java sd2223trab1.clients.rest.RemoveMessageClient user mid pwd");
+            System.err.println("Usage: user mid pwd");
             return;
         }
         String user = args[0];

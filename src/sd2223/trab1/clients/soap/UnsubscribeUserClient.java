@@ -24,5 +24,6 @@ public class UnsubscribeUserClient {
         var soapClient = new SoapFeedsClient(domain);
         var res = soapClient.unsubscribeUser(user, userSub, pwd);
         System.out.println(res);
+        Log.info(res.toString());
     }
 }
