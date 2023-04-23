@@ -13,6 +13,7 @@ public class UsersClientFactory {
     public static Users get(URI serverURI) {
         var uriString = serverURI.toString();
         if (uriString.endsWith(REST))
+//            TODO uncomment when implement interoperable soap and rest servers
 //            return new RestUsersClient(serverURI);
             return null;
         else if (uriString.endsWith(SOAP))
