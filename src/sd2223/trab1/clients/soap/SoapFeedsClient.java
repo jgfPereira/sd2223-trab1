@@ -43,42 +43,41 @@ public class SoapFeedsClient extends SoapClient implements Feeds {
 
     @Override
     public Result<Long> postMessage(String user, String pwd, Message msg) {
-//        return super.reTry(() -> super.toJavaResult(() -> stub().createUser(user)));
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().postMessage(user, pwd, msg)));
     }
 
     @Override
     public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().removeFromPersonalFeed(user, mid, pwd)));
     }
 
     @Override
     public Result<Message> getMessage(String user, long mid) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().getMessage(user, mid)));
     }
 
     @Override
     public Result<List<Message>> getMessages(String user, long time) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().getMessages(user, time)));
     }
 
     @Override
     public Result<Void> subUser(String user, String userSub, String pwd) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().subUser(user, userSub, pwd)));
     }
 
     @Override
     public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().unsubscribeUser(user, userSub, pwd)));
     }
 
     @Override
     public Result<List<String>> listSubs(String user) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().listSubs(user)));
     }
 
     @Override
     public Result<List<Message>> getUserOnlyMessages(String user) {
-        return null;
+        return super.reTry(() -> super.toJavaResult(() -> stub().getUserOnlyMessages(user)));
     }
 }

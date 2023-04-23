@@ -102,4 +102,6 @@ public interface FeedsService {
      */
     @WebMethod
     List<String> listSubs(String user) throws FeedsException;
+
+    List<Message> getUserOnlyMessages(String user) throws FeedsException;
 }

@@ -102,6 +102,62 @@ public class FeedsImpl implements Feeds {
 
     @Override
     public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
+        Log.info("unsubscribeUser : " + user + " " + userSub + " " + pwd);
+        if (user == null || userSub == null || pwd == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String unfollowed = user.split("@")[0];
+        final String unfollowedDomain = user.split("@")[1];
+        final String unfollower = userSub.split("@")[0];
+        final String unfollowerDomain = userSub.split("@")[1];
+        var getUnfollowed = new SoapUsersClient(unfollowedDomain).getUser(unfollowed, pwd);
+        var getUnfollower = new SoapUsersClient(unfollowerDomain).internal_getUser(unfollower);
+        if (!getUnfollowed.isOK()) {
+            Log.info(getUnfollowed.toString());
+            switch (getUnfollowed.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        }
+        if (!getUnfollower.isOK()) {
+            Log.info(getUnfollower.toString());
+            switch (getUnfollower.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        }
+        if (getUnfollowed.isOK() && getUnfollower.isOK()) {
+            synchronized (subs) {
+                List<String> listSubs = this.subs.get(user);
+                if (listSubs != null) {
+                    if (listSubs.remove(userSub)) {
+                        Log.info("Success, " + unfollower + " has unsubscribed to " + unfollowed);
+                    } else {
+                        Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
+                    }
+                } else {
+                    Log.info("Success, " + unfollower + " was not subscribed to " + unfollowed);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Result<List<String>> listSubs(String user) {
         return null;
     }
 
@@ -117,11 +173,6 @@ public class FeedsImpl implements Feeds {
 
     @Override
     public Result<List<Message>> getMessages(String user, long time) {
-        return null;
-    }
-
-    @Override
-    public Result<List<String>> listSubs(String user) {
         return null;
     }
 
