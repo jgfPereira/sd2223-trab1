@@ -80,4 +80,5 @@ public class SoapFeedsClient extends SoapClient implements Feeds {
     public Result<List<Message>> getUserOnlyMessages(String user) {
         return super.reTry(() -> super.toJavaResult(() -> stub().getUserOnlyMessages(user)));
     }
+
 }

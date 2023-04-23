@@ -102,7 +102,7 @@ public class FeedsImpl implements Feeds {
                 }
             }
         }
-        return null;
+        return Result.ok();
     }
 
     @Override
@@ -158,7 +158,7 @@ public class FeedsImpl implements Feeds {
                 }
             }
         }
-        return null;
+        return Result.ok();
     }
 
     @Override
@@ -249,18 +249,14 @@ public class FeedsImpl implements Feeds {
             List<Message> allFeed = new ArrayList<>();
             var userOnlyMsgs = new SoapFeedsClient(feedUserDomain).getUserOnlyMessages(user);
             if (userOnlyMsgs.isOK()) {
-                Result<List<Message>> userOnlyMsgList = this.convertToResultListMsg(userOnlyMsgs);
+                List<Message> userOnlyMsgList = this.convertToList(userOnlyMsgs.value());
                 this.addMessagesNewer(allFeed, userOnlyMsgList, time);
             }
             var userSubs = new SoapFeedsClient(feedUserDomain).listSubs(user);
-            Result<List<String>> userSubsList = null;
-            if (userSubs.isOK()) {
-                userSubsList = this.convertToResultListStr(userSubs);
-            }
-            for (String subscriber : userSubsList.value()) {
+            for (String subscriber : userSubs.value()) {
                 var subscriberOnlyMsgs = new SoapFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
                 if (subscriberOnlyMsgs != null) {
-                    Result<List<Message>> subOnlyMsgList = this.convertToResultListMsg(subscriberOnlyMsgs);
+                    List<Message> subOnlyMsgList = this.convertToList(subscriberOnlyMsgs.value());
                     this.addMessagesNewer(allFeed, subOnlyMsgList, time);
                 }
             }
@@ -268,30 +264,23 @@ public class FeedsImpl implements Feeds {
         }
     }
 
-    private Result<List<Message>> convertToResultListMsg(Result<List<Message>> rlmsg) {
+    private List<Message> convertToList(List<Message> lmsg) {
         ObjectMapper mapper = new ObjectMapper();
-        Result<List<Message>> converted = mapper.convertValue(rlmsg, new TypeReference<Result<List<Message>>>() {
+        List<Message> converted = mapper.convertValue(lmsg, new TypeReference<List<Message>>() {
         });
         return converted;
     }
 
-    private Result<List<String>> convertToResultListStr(Result<List<String>> rlsub) {
-        ObjectMapper mapper = new ObjectMapper();
-        Result<List<String>> converted = mapper.convertValue(rlsub, new TypeReference<Result<List<String>>>() {
-        });
-        return converted;
-    }
-
-    private void addMessagesNewer(List<Message> allFeed, Result<List<Message>> other, long time) {
-        for (Message m : other.value()) {
+    private void addMessagesNewer(List<Message> allFeed, List<Message> other, long time) {
+        for (Message m : other) {
             if (m.getCreationTime() > time) {
                 allFeed.add(m);
             }
         }
     }
 
-    private void addAllMessages(List<Message> allMsgs, Result<List<Message>> other) {
-        for (Message m : other.value()) {
+    private void addAllMessages(List<Message> allMsgs, List<Message> other) {
+        for (Message m : other) {
             allMsgs.add(m);
         }
     }
@@ -322,18 +311,14 @@ public class FeedsImpl implements Feeds {
             List<Message> allFeed = new ArrayList<>();
             var userOnlyMsgs = new SoapFeedsClient(msgUserDomain).getUserOnlyMessages(user);
             if (userOnlyMsgs.isOK()) {
-                Result<List<Message>> userOnlyMsgList = this.convertToResultListMsg(userOnlyMsgs);
+                List<Message> userOnlyMsgList = this.convertToList(userOnlyMsgs.value());
                 this.addAllMessages(allFeed, userOnlyMsgList);
             }
             var userSubs = new SoapFeedsClient(msgUserDomain).listSubs(user);
-            Result<List<String>> userSubsList = null;
-            if (userSubs.isOK()) {
-                userSubsList = this.convertToResultListStr(userSubs);
-            }
-            for (String subscriber : userSubsList.value()) {
+            for (String subscriber : userSubs.value()) {
                 var subscriberOnlyMsgs = new SoapFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
                 if (subscriberOnlyMsgs != null) {
-                    Result<List<Message>> subOnlyMsgList = this.convertToResultListMsg(subscriberOnlyMsgs);
+                    List<Message> subOnlyMsgList = this.convertToList(subscriberOnlyMsgs.value());
                     this.addAllMessages(allFeed, subOnlyMsgList);
                 }
             }
@@ -390,6 +375,6 @@ public class FeedsImpl implements Feeds {
                 }
             }
         }
-        return null;
+        return Result.ok();
     }
 }

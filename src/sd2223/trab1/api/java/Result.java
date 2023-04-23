@@ -68,9 +68,6 @@ public interface Result<T> {
     enum ErrorCode {OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED, TIMEOUT}
 }
 
-/*
- *
- */
 class OkResult<T> implements Result<T> {
 
     final T result;
