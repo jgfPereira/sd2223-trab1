@@ -1,6 +1,9 @@
 package sd2223.trab1.api.java;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import sd2223.trab1.api.Message;
+import sd2223.trab1.clients.soap.SoapFeedsClient;
 import sd2223.trab1.clients.soap.SoapUsersClient;
 
 import java.util.*;
@@ -190,8 +193,105 @@ public class FeedsImpl implements Feeds {
     }
 
     @Override
-    public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
-        return null;
+    public Result<List<Message>> getUserOnlyMessages(String user) {
+        Log.info("getUserOnlyMessages : " + user);
+        if (user == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String uname = user.split("@")[0];
+        final String userDomain = user.split("@")[1];
+        var getUser = new SoapUsersClient(userDomain).internal_getUser(uname);
+        if (!getUser.isOK()) {
+            Log.info(getUser.toString());
+            switch (getUser.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        } else {
+            synchronized (feeds) {
+                return new OkResult<>(this.feeds.getOrDefault(user, new ArrayList<>()));
+            }
+        }
+    }
+
+    @Override
+    public Result<List<Message>> getMessages(String user, long time) {
+        Log.info("getMessages : " + user + ", time newer then " + time);
+        if (user == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String feedUser = user.split("@")[0];
+        final String feedUserDomain = user.split("@")[1];
+        var getUser = new SoapUsersClient(feedUserDomain).internal_getUser(feedUser);
+        if (!getUser.isOK()) {
+            Log.info(getUser.toString());
+            switch (getUser.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        } else {
+            List<Message> allFeed = new ArrayList<>();
+            var userOnlyMsgs = new SoapFeedsClient(feedUserDomain).getUserOnlyMessages(user);
+            if (userOnlyMsgs.isOK()) {
+                Result<List<Message>> userOnlyMsgList = this.convertToResultListMsg(userOnlyMsgs);
+                this.addMessagesNewer(allFeed, userOnlyMsgList, time);
+            }
+            var userSubs = new SoapFeedsClient(feedUserDomain).listSubs(user);
+            Result<List<String>> userSubsList = null;
+            if (userSubs.isOK()) {
+                userSubsList = this.convertToResultListStr(userSubs);
+            }
+            for (String subscriber : userSubsList.value()) {
+                var subscriberOnlyMsgs = new SoapFeedsClient(subscriber.split("@")[1]).getUserOnlyMessages(subscriber);
+                if (subscriberOnlyMsgs != null) {
+                    Result<List<Message>> subOnlyMsgList = this.convertToResultListMsg(subscriberOnlyMsgs);
+                    this.addMessagesNewer(allFeed, subOnlyMsgList, time);
+                }
+            }
+            return new OkResult<>(allFeed);
+        }
+    }
+
+    private Result<List<Message>> convertToResultListMsg(Result<List<Message>> rlmsg) {
+        ObjectMapper mapper = new ObjectMapper();
+        Result<List<Message>> converted = mapper.convertValue(rlmsg, new TypeReference<Result<List<Message>>>() {
+        });
+        return converted;
+    }
+
+    private Result<List<String>> convertToResultListStr(Result<List<String>> rlsub) {
+        ObjectMapper mapper = new ObjectMapper();
+        Result<List<String>> converted = mapper.convertValue(rlsub, new TypeReference<Result<List<String>>>() {
+        });
+        return converted;
+    }
+
+    private void addMessagesNewer(List<Message> allFeed, Result<List<Message>> other, long time) {
+        for (Message m : other.value()) {
+            if (m.getCreationTime() > time) {
+                allFeed.add(m);
+            }
+        }
+    }
+
+    private void addAllMessages(List<Message> allMsgs, Result<List<Message>> other) {
+        for (Message m : other.value()) {
+            allMsgs.add(m);
+        }
     }
 
     @Override
@@ -200,12 +300,8 @@ public class FeedsImpl implements Feeds {
     }
 
     @Override
-    public Result<List<Message>> getMessages(String user, long time) {
+    public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
         return null;
     }
 
-    @Override
-    public Result<List<Message>> getUserOnlyMessages(String user) {
-        return null;
-    }
 }
