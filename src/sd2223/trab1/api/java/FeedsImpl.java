@@ -158,7 +158,35 @@ public class FeedsImpl implements Feeds {
 
     @Override
     public Result<List<String>> listSubs(String user) {
-        return null;
+        Log.info("listSubs : " + user);
+        if (user == null) {
+            Log.info("User data invalid");
+            return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+        }
+        final String listUser = user.split("@")[0];
+        final String listUserDomain = user.split("@")[1];
+        var getUser = new SoapUsersClient(listUserDomain).internal_getUser(listUser);
+        if (!getUser.isOK()) {
+            Log.info(getUser.toString());
+            switch (getUser.error()) {
+                case BAD_REQUEST:
+                    return new ErrorResult<>(Result.ErrorCode.BAD_REQUEST);
+                case NOT_FOUND:
+                    return new ErrorResult<>(Result.ErrorCode.NOT_FOUND);
+                case FORBIDDEN:
+                    return new ErrorResult<>(Result.ErrorCode.FORBIDDEN);
+                default:
+                    return new ErrorResult<>(Result.ErrorCode.INTERNAL_ERROR);
+            }
+        } else {
+            synchronized (subs) {
+                List<String> resSubs = this.subs.get(user);
+                if (resSubs == null) {
+                    resSubs = new ArrayList<>();
+                }
+                return new OkResult<>(resSubs);
+            }
+        }
     }
 
     @Override
